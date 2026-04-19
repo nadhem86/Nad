@@ -4,83 +4,64 @@
     {
       "label": "📦 Packager l'extension (ZIP)",
       "type": "shell",
-      "command": "zip",
+      "command": "Compress-Archive",
       "args": [
-        "-r",
-        "../whatsapp-vtiger-extension.zip",
-        ".",
-        "-x", ".vscode/*",
-        "-x", ".chrome-profile/*",
-        "-x", "*.map",
-        "-x", ".gitignore"
+        "-Path", "${workspaceFolder}\\*",
+        "-DestinationPath", "${workspaceFolder}\\..\\whatsapp-vtiger-extension.zip",
+        "-Force"
       ],
-      "group": "build",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Compress-Archive -Path '${workspaceFolder}\\*' -DestinationPath '${workspaceFolder}\\..\\whatsapp-vtiger-extension.zip' -Force; Write-Host '✅ ZIP créé'"
+        ]
       },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     },
     {
-      "label": "🧹 Nettoyer le profil Chrome de test",
+      "label": "🧹 Nettoyer profil Chrome de test",
       "type": "shell",
-      "command": "rm",
-      "args": ["-rf", "${workspaceFolder}/.chrome-profile"],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Remove-Item -Recurse -Force '${workspaceFolder}\\.chrome-profile' -ErrorAction SilentlyContinue; Write-Host '✅ Profil supprimé'"
+        ]
+      },
       "group": "none",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     },
     {
-      "label": "🌐 Ouvrir Chrome avec l'extension (debug port 9222)",
+      "label": "🌐 Ouvrir Chrome avec Extension",
       "type": "shell",
-      "command": "google-chrome",
-      "args": [
-        "--load-extension=${workspaceFolder}",
-        "--disable-extensions-except=${workspaceFolder}",
-        "--remote-debugging-port=9222",
-        "--user-data-dir=${workspaceFolder}/.chrome-profile",
-        "--no-first-run",
-        "https://web.whatsapp.com"
-      ],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Start-Process 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' -ArgumentList '--load-extension=${workspaceFolder}','--disable-extensions-except=${workspaceFolder}','--remote-debugging-port=9222','--user-data-dir=${workspaceFolder}\\.chrome-profile','https://web.whatsapp.com'"
+        ]
+      },
       "isBackground": true,
       "group": "none",
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      },
+      "presentation": { "reveal": "silent", "panel": "shared" },
       "problemMatcher": []
     },
     {
-      "label": "🔍 Valider le manifest.json",
+      "label": "🔍 Valider manifest.json",
       "type": "shell",
-      "command": "node",
-      "args": [
-        "-e",
-        "try { JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('✅ manifest.json valide'); } catch(e) { console.error('❌ Erreur:', e.message); process.exit(1); }"
-      ],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "try { $m=Get-Content '${workspaceFolder}\\manifest.json' | ConvertFrom-Json; Write-Host '✅ manifest.json valide -' $m.name 'v' $m.version } catch { Write-Error '❌ Erreur manifest.json'; exit 1 }"
+        ]
+      },
       "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "📋 Afficher les infos de l'extension",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "-e",
-        "const m=JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('Nom:',m.name,'\\nVersion:',m.version,'\\nManifest V:',m.manifest_version,'\\nPermissions:',m.permissions?.join(', '));"
-      ],
-      "group": "none",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
   ]

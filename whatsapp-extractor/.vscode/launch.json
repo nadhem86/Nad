@@ -6,18 +6,20 @@
       "type": "chrome",
       "request": "launch",
       "url": "https://web.whatsapp.com",
+      "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "runtimeArgs": [
         "--load-extension=${workspaceFolder}",
         "--disable-extensions-except=${workspaceFolder}",
+        "--remote-debugging-port=9222",
         "--no-first-run",
         "--no-default-browser-check"
       ],
-      "userDataDir": "${workspaceFolder}/.chrome-profile",
+      "userDataDir": "${workspaceFolder}\\.chrome-profile",
       "sourceMaps": true,
       "webRoot": "${workspaceFolder}"
     },
     {
-      "name": "🔧 Debug Content Script (WhatsApp Web)",
+      "name": "🔧 Debug Content Script (attach)",
       "type": "chrome",
       "request": "attach",
       "port": 9222,
@@ -26,7 +28,7 @@
       "webRoot": "${workspaceFolder}"
     },
     {
-      "name": "🔧 Debug Background Service Worker",
+      "name": "🔧 Debug Service Worker (attach)",
       "type": "chrome",
       "request": "attach",
       "port": 9222,
@@ -35,17 +37,18 @@
       "webRoot": "${workspaceFolder}"
     },
     {
-      "name": "🧪 Lancer Chrome (debug port ouvert)",
+      "name": "🚀 Chrome (Edge - alternative)",
       "type": "chrome",
       "request": "launch",
       "url": "https://web.whatsapp.com",
+      "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
       "runtimeArgs": [
         "--load-extension=${workspaceFolder}",
         "--disable-extensions-except=${workspaceFolder}",
         "--remote-debugging-port=9222",
         "--no-first-run"
       ],
-      "userDataDir": "${workspaceFolder}/.chrome-profile",
+      "userDataDir": "${workspaceFolder}\\.edge-profile",
       "sourceMaps": true,
       "webRoot": "${workspaceFolder}"
     }

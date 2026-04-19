@@ -34,6 +34,27 @@ body {
   font-size: 15px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon-header {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+}
+.btn-icon-header:hover { background: rgba(255,255,255,0.28); }
+
 .badge {
   font-size: 11px;
   padding: 2px 8px;
@@ -76,6 +97,13 @@ body {
   flex: 1;
 }
 .btn-primary:hover:not(:disabled) { background: #1da851; }
+
+.btn-vtiger {
+  background: #1e5fa8;
+  color: white;
+  flex: 1;
+}
+.btn-vtiger:hover:not(:disabled) { background: #174d8a; }
 
 .btn-secondary {
   background: #e9edef;
@@ -253,6 +281,47 @@ body {
 .error-hint { margin-top: 6px; color: #667781; font-size: 11px; }
 .error-hint a { color: #25D366; }
 
+.hidden { display: none !important; }
+
+.sync-progress {
+  padding: 6px 14px;
+  background: #e3f2fd;
+  flex-shrink: 0;
+}
+
+.sync-bar-wrap {
+  height: 4px;
+  background: #c5e0ff;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.sync-bar {
+  height: 100%;
+  background: #1e5fa8;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+#sync-label { font-size: 11px; color: #1565c0; font-weight: 500; }
+
+.sync-result {
+  display: flex;
+  gap: 8px;
+  padding: 5px 14px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #c5e0ff;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.sr-item { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+.sr-green { background: #dcf8c6; color: #1a5c2a; }
+.sr-blue  { background: #e3f2fd; color: #1565c0; }
+.sr-gray  { background: #f0f2f5; color: #667781; }
+.sr-red   { background: #fde8e8; color: #c0392b; }
+
 .footer {
   background: #ededed;
   padding: 5px 14px;
@@ -260,9 +329,21 @@ body {
   color: #667781;
   flex-shrink: 0;
   border-top: 1px solid #d1d7db;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.hidden { display: none !important; }
+.vtiger-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  cursor: help;
+}
+.vtiger-ok { background: #25D366; }
+.vtiger-nc { background: #b0bec5; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

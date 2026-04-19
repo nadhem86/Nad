@@ -1,0 +1,39 @@
+{
+  "recommendations": [
+    // ── Formatage & Linting ──
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+
+    // ── Chrome Extension Development ──
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.js-debug",
+
+    // ── IntelliSense ──
+    "christian-kohler.path-intellisense",
+    "visualstudioexptteam.vscodeintellicode",
+
+    // ── Git ──
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // ── HTML / CSS ──
+    "ecmel.vscode-html-css",
+    "stylelint.vscode-stylelint",
+    "zignd.html-css-class-completion",
+
+    // ── JSON / Manifest ──
+    "zainchen.json",
+    "nickdemayo.vscode-json-editor",
+
+    // ── UI ──
+    "PKief.material-icon-theme",
+    "GitHub.github-vscode-theme",
+
+    // ── Productivité ──
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-french",
+    "aaron-bond.better-comments",
+    "oderwat.indent-rainbow"
+  ]
+}

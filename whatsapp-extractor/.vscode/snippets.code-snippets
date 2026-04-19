@@ -1,0 +1,86 @@
+{
+  "Chrome Message Listener": {
+    "prefix": "wa-listener",
+    "body": [
+      "chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {",
+      "  if (msg.action === '${1:action}') {",
+      "    ${2:// traitement}",
+      "    sendResponse({ success: true, data: ${3:null} });",
+      "    return true;",
+      "  }",
+      "});"
+    ],
+    "description": "Listener de message Chrome Extension"
+  },
+
+  "Send Message to Tab": {
+    "prefix": "wa-send-tab",
+    "body": [
+      "chrome.tabs.query({ url: 'https://web.whatsapp.com/*' }, tabs => {",
+      "  if (!tabs[0]) return;",
+      "  chrome.tabs.sendMessage(tabs[0].id, { action: '${1:action}' }, res => {",
+      "    ${2:console.log(res);}",
+      "  });",
+      "});"
+    ],
+    "description": "Envoyer un message à l'onglet WhatsApp Web"
+  },
+
+  "Chrome Storage Get": {
+    "prefix": "wa-storage-get",
+    "body": [
+      "chrome.storage.local.get(['${1:key}'], ({ ${1:key} }) => {",
+      "  ${2:console.log(${1:key});}",
+      "});"
+    ],
+    "description": "Lire depuis chrome.storage.local"
+  },
+
+  "Chrome Storage Set": {
+    "prefix": "wa-storage-set",
+    "body": [
+      "chrome.storage.local.set({ ${1:key}: ${2:value} }, () => {",
+      "  ${3:// callback}",
+      "});"
+    ],
+    "description": "Écrire dans chrome.storage.local"
+  },
+
+  "Inject Page Script": {
+    "prefix": "wa-inject",
+    "body": [
+      "function injectScript(code) {",
+      "  return new Promise(resolve => {",
+      "    const script = document.createElement('script');",
+      "    script.textContent = `(function() { ${1:// code injecté dans la page} })();`;",
+      "    document.head.appendChild(script);",
+      "    script.remove();",
+      "    const handler = e => {",
+      "      document.removeEventListener('${2:event-name}', handler);",
+      "      resolve(e.detail);",
+      "    };",
+      "    document.addEventListener('${2:event-name}', handler);",
+      "    setTimeout(() => { document.removeEventListener('${2:event-name}', handler); resolve(null); }, 5000);",
+      "  });",
+      "}"
+    ],
+    "description": "Injecter un script dans la page WhatsApp Web"
+  },
+
+  "vTiger Client Usage": {
+    "prefix": "wa-vtiger",
+    "body": [
+      "const client = new VtigerClient({ url: '${1:url}', username: '${2:user}', accessKey: '${3:key}' });",
+      "await client.login();",
+      "try {",
+      "  const existing = await client.findContactByPhone('${4:+33600000000}');",
+      "  if (!existing) {",
+      "    await client.create('Contacts', VtigerClient.mapContact(${5:waContact}));",
+      "  }",
+      "} finally {",
+      "  await client.logout();",
+      "}"
+    ],
+    "description": "Utiliser le client vTiger CRM"
+  }
+}

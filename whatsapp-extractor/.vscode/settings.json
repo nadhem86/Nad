@@ -1,0 +1,67 @@
+{
+  // ── Éditeur ──
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.rulers": [100],
+  "editor.wordWrap": "off",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+
+  // ── Fichiers ──
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    ".chrome-profile": true,
+    "**/.DS_Store": true
+  },
+
+  // ── JS / Chrome Extension ──
+  "javascript.validate.enable": false,
+  "javascript.suggest.autoImports": false,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // ── Prettier ──
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.trailingComma": "es5",
+  "prettier.printWidth": 100,
+
+  // ── ESLint ──
+  "eslint.validate": ["javascript"],
+  "eslint.run": "onSave",
+
+  // ── Coloration manifest.json / _locales ──
+  "files.associations": {
+    "manifest.json": "jsonc"
+  },
+
+  // ── IntelliSense Chrome Extension APIs ──
+  "javascript.preferences.quoteStyle": "single",
+
+  // ── Terminal ──
+  "terminal.integrated.defaultProfile.linux": "bash",
+
+  // ── Explorer ──
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "popup.html": "popup.js, popup.css",
+    "options.html": "options.js, options.css",
+    "manifest.json": "background.js, content.js, vtiger.js",
+    "*.html": "${capture}.js, ${capture}.css"
+  }
+}

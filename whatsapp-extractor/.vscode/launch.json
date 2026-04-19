@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Lancer Chrome + Extension",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://web.whatsapp.com",
+      "runtimeArgs": [
+        "--load-extension=${workspaceFolder}",
+        "--disable-extensions-except=${workspaceFolder}",
+        "--no-first-run",
+        "--no-default-browser-check"
+      ],
+      "userDataDir": "${workspaceFolder}/.chrome-profile",
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "🔧 Debug Content Script (WhatsApp Web)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "urlFilter": "https://web.whatsapp.com/*",
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "🔧 Debug Background Service Worker",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "urlFilter": "chrome-extension://*/background.js",
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "🧪 Lancer Chrome (debug port ouvert)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://web.whatsapp.com",
+      "runtimeArgs": [
+        "--load-extension=${workspaceFolder}",
+        "--disable-extensions-except=${workspaceFolder}",
+        "--remote-debugging-port=9222",
+        "--no-first-run"
+      ],
+      "userDataDir": "${workspaceFolder}/.chrome-profile",
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}

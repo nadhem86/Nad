@@ -1,0 +1,69 @@
+{
+  "folders": [
+    {
+      "name": "WhatsApp → vTiger Extension",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.bracketPairColorization.enabled": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+      "popup.html":   "popup.js, popup.css",
+      "options.html": "options.js, options.css",
+      "manifest.json":"background.js, content.js, vtiger.js, .eslintrc.json, .prettierrc, .gitignore"
+    },
+    "files.exclude": {
+      ".chrome-profile": true
+    },
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorTheme": "GitHub Dark"
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "eamodio.gitlens",
+      "PKief.material-icon-theme",
+      "GitHub.github-vscode-theme",
+      "ms-vscode.js-debug",
+      "christian-kohler.path-intellisense",
+      "aaron-bond.better-comments"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🚀 WhatsApp Web + Extension",
+        "type": "chrome",
+        "request": "launch",
+        "url": "https://web.whatsapp.com",
+        "runtimeArgs": [
+          "--load-extension=${workspaceFolder}",
+          "--disable-extensions-except=${workspaceFolder}",
+          "--remote-debugging-port=9222",
+          "--no-first-run"
+        ],
+        "userDataDir": "${workspaceFolder}/.chrome-profile",
+        "webRoot": "${workspaceFolder}"
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "📦 Packager ZIP",
+        "type": "shell",
+        "command": "zip -r ../whatsapp-vtiger-extension.zip . -x '.vscode/*' -x '.chrome-profile/*' -x '*.zip'",
+        "group": { "kind": "build", "isDefault": true },
+        "presentation": { "reveal": "always" },
+        "problemMatcher": []
+      }
+    ]
+  }
+}

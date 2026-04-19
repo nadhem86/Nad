@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "📦 Packager l'extension (ZIP)",
+      "type": "shell",
+      "command": "zip",
+      "args": [
+        "-r",
+        "../whatsapp-vtiger-extension.zip",
+        ".",
+        "-x", ".vscode/*",
+        "-x", ".chrome-profile/*",
+        "-x", "*.map",
+        "-x", ".gitignore"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧹 Nettoyer le profil Chrome de test",
+      "type": "shell",
+      "command": "rm",
+      "args": ["-rf", "${workspaceFolder}/.chrome-profile"],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🌐 Ouvrir Chrome avec l'extension (debug port 9222)",
+      "type": "shell",
+      "command": "google-chrome",
+      "args": [
+        "--load-extension=${workspaceFolder}",
+        "--disable-extensions-except=${workspaceFolder}",
+        "--remote-debugging-port=9222",
+        "--user-data-dir=${workspaceFolder}/.chrome-profile",
+        "--no-first-run",
+        "https://web.whatsapp.com"
+      ],
+      "isBackground": true,
+      "group": "none",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔍 Valider le manifest.json",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "-e",
+        "try { JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('✅ manifest.json valide'); } catch(e) { console.error('❌ Erreur:', e.message); process.exit(1); }"
+      ],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📋 Afficher les infos de l'extension",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "-e",
+        "const m=JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('Nom:',m.name,'\\nVersion:',m.version,'\\nManifest V:',m.manifest_version,'\\nPermissions:',m.permissions?.join(', '));"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

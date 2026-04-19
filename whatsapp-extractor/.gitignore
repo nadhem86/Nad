@@ -1,0 +1,16 @@
+# Profil Chrome de test (généré par VS Code launch)
+.chrome-profile/
+
+# Archives de packaging
+*.zip
+*.crx
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+*.swp
+*.swo
+.idea/

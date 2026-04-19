@@ -3,56 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhatsApp Extractor</title>
+  <title>WA → vTiger</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
+  <!-- HEADER -->
   <div class="header">
     <div class="logo">
-      <svg viewBox="0 0 24 24" fill="#25D366" width="24" height="24">
+      <svg viewBox="0 0 24 24" fill="#25D366" width="22" height="22">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
       </svg>
       <span>WA → vTiger</span>
     </div>
-    <div class="header-actions">
+    <div class="header-right">
       <div id="status-badge" class="badge badge-idle">En attente</div>
       <button id="btn-settings" class="btn-icon-header" title="Paramètres vTiger">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
           <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
         </svg>
       </button>
     </div>
   </div>
 
+  <!-- TOOLBAR -->
   <div class="toolbar">
     <button id="btn-extract" class="btn btn-primary">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
       Extraire
     </button>
     <button id="btn-sync" class="btn btn-vtiger" disabled>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
       Sync vTiger
     </button>
     <button id="btn-export-csv" class="btn btn-secondary" disabled>CSV</button>
     <button id="btn-export-json" class="btn btn-secondary" disabled>JSON</button>
     <button id="btn-clear" class="btn btn-danger" disabled>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
   </div>
 
+  <!-- SYNC PROGRESS -->
   <div id="sync-progress" class="sync-progress hidden">
-    <div class="sync-bar-wrap">
-      <div id="sync-bar" class="sync-bar" style="width:0%"></div>
-    </div>
+    <div class="sync-bar-wrap"><div id="sync-bar" class="sync-bar" style="width:0%"></div></div>
     <span id="sync-label">Synchronisation…</span>
   </div>
 
+  <!-- SYNC RESULT -->
   <div id="sync-result" class="sync-result hidden">
     <span id="sync-created" class="sr-item sr-green"></span>
     <span id="sync-updated" class="sr-item sr-blue"></span>
@@ -60,39 +56,51 @@
     <span id="sync-errors"  class="sr-item sr-red hidden"></span>
   </div>
 
-  <div id="stats-bar" class="stats-bar hidden">
-    <span id="stat-total">0 contacts</span>
-    <span id="stat-source"></span>
-    <span id="stat-time"></span>
+  <!-- TABS -->
+  <div id="tabs-bar" class="tabs-bar hidden">
+    <button class="tab active" data-tab="contacts">
+      Contacts <span id="tab-count-contacts" class="tab-count">0</span>
+    </button>
+    <button class="tab" data-tab="groups">
+      Groupes <span id="tab-count-groups" class="tab-count">0</span>
+    </button>
+    <button class="tab" data-tab="conversations">
+      Conversations <span id="tab-count-conversations" class="tab-count">0</span>
+    </button>
   </div>
 
+  <!-- SEARCH -->
   <div id="search-bar" class="search-bar hidden">
-    <input type="text" id="search-input" placeholder="Rechercher un contact ou numéro..." />
+    <input type="text" id="search-input" placeholder="Rechercher…" />
   </div>
 
+  <!-- LOADER -->
   <div id="loader" class="loader hidden">
     <div class="spinner"></div>
     <span id="loader-label">Extraction en cours…</span>
   </div>
 
+  <!-- ERROR -->
   <div id="error-box" class="error-box hidden">
-    <strong>Erreur :</strong>
-    <span id="error-msg"></span>
+    <strong>Erreur :</strong> <span id="error-msg"></span>
     <div class="error-hint">
-      Ouvrez <a href="https://web.whatsapp.com" target="_blank">web.whatsapp.com</a> et assurez-vous d'être connecté.
-      <br/>Pour vTiger : vérifiez vos <a id="link-settings" href="#">paramètres</a>.
+      Ouvrez <a href="https://web.whatsapp.com" target="_blank">web.whatsapp.com</a> et connectez-vous.
+      Pour vTiger : <a id="link-settings" href="#">paramètres</a>.
     </div>
   </div>
 
-  <div id="contact-list" class="contact-list"></div>
+  <!-- PANELS -->
+  <div id="panel-contacts"     class="panel active"></div>
+  <div id="panel-groups"       class="panel hidden"></div>
+  <div id="panel-conversations"class="panel hidden"></div>
 
+  <!-- EMPTY STATE -->
   <div id="empty-state" class="empty-state hidden">
-    <svg viewBox="0 0 24 24" width="48" height="48" fill="#ccc">
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-    </svg>
-    <p>Aucun contact trouvé.<br/>Ouvrez quelques conversations WhatsApp avant d'extraire.</p>
+    <svg viewBox="0 0 24 24" width="44" height="44" fill="#ccc"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    <p id="empty-msg">Aucun élément trouvé.</p>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
     <span id="footer-info">Connectez WhatsApp Web pour commencer</span>
     <span id="vtiger-status" class="vtiger-dot vtiger-nc" title="vTiger non configuré"></span>

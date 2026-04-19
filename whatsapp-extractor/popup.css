@@ -214,9 +214,13 @@ body {
 }
 
 .tag-business { background: #e8f5e9; color: #2e7d32; }
-.tag-muted { background: #fce4ec; color: #c62828; }
-.tag-unread { background: #25D366; color: white; }
-.tag-source { background: #e3f2fd; color: #1565c0; }
+.tag-muted    { background: #fce4ec; color: #c62828; }
+.tag-unread   { background: #25D366; color: white; }
+.tag-source   { background: #e3f2fd; color: #1565c0; }
+.tag-group    { background: #ede7f6; color: #4527a0; }
+.tag-admin    { background: #fff3e0; color: #e65100; }
+.tag-pin      { background: #f5f5f5; color: #555; }
+.tag-time     { background: #f5f5f5; color: #888; }
 
 .contact-actions {
   display: flex;
@@ -280,6 +284,156 @@ body {
 
 .error-hint { margin-top: 6px; color: #667781; font-size: 11px; }
 .error-hint a { color: #25D366; }
+
+/* ── Tabs ── */
+.tabs-bar {
+  display: flex;
+  background: white;
+  border-bottom: 2px solid #e9edef;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: #667781;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.tab:hover { color: #111b21; }
+.tab.active { color: #075e54; border-bottom-color: #25D366; }
+
+.tab-count {
+  background: #e9edef;
+  border-radius: 10px;
+  padding: 0 5px;
+  font-size: 10px;
+  color: #667781;
+}
+.tab.active .tab-count { background: #dcf8c6; color: #1a5c2a; }
+
+/* ── Panel ── */
+.panel {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+/* ── Groupe card ── */
+.group-card {
+  background: white;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.group-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 9px 14px;
+  gap: 10px;
+}
+
+.group-meta { flex: 1; min-width: 0; }
+
+.group-desc {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.participants-list {
+  padding: 0 14px 8px 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.participant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.p-name {
+  font-weight: 500;
+  color: #3b4a54;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p-phone { color: #667781; }
+
+.p-more {
+  font-size: 11px;
+  color: #25D366;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Conversation row ── */
+.conv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.conv-time {
+  font-size: 11px;
+  color: #667781;
+  flex-shrink: 0;
+}
+
+.last-msg {
+  font-size: 11px;
+  color: #667781;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.last-msg-inline {
+  font-size: 11px;
+  color: #667781;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.unread-badge {
+  background: #25D366;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 3px;
+}
+
+/* ── Avatar variants ── */
+.contact-avatar.group   { background: #7b68ee; }
+.contact-avatar.business{ background: #075e54; }
 
 .hidden { display: none !important; }
 

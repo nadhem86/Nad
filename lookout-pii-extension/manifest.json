@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Lookout PII — export par lot",
+  "version": "1.0.0",
+  "description": "Capture automatiquement le auth-token de la console Omnissa/Lookout et exporte les PII des appareils depuis une liste d'issues, en CSV.",
+  "permissions": ["webRequest", "storage", "downloads", "tabs"],
+  "host_permissions": ["https://*.lookout.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Lookout PII",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

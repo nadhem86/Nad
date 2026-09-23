@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { font-family: "Segoe UI", system-ui, sans-serif; max-width: 640px; margin: 30px auto; padding: 0 16px; color: #222; }
+      h1 { font-size: 18px; }
+      label { display: block; margin: 14px 0 4px; font-weight: 600; font-size: 13px; }
+      input { width: 100%; padding: 7px; border: 1px solid #ccc; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; }
+      .hint { color: #666; font-size: 12px; line-height: 1.5; }
+      button { margin-top: 16px; padding: 9px 16px; border: 0; border-radius: 6px; background: #2f7fd1; color: #fff; font-size: 14px; cursor: pointer; }
+      #msg { margin-top: 12px; font-size: 13px; color: #2a8f52; }
+      code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+    </style>
+  </head>
+  <body>
+    <h1>Options — schéma issue → device (repli manuel)</h1>
+    <p class="hint">
+      Normalement, le bouton <b>Apprendre</b> du popup remplit tout ceci
+      automatiquement. Ne renseigne ces champs que si l'apprentissage échoue.
+      Ouvre une issue dans la console avec l'onglet Réseau (F12) et repère
+      l'appel XHR qui renvoie les infos de l'appareil.
+    </p>
+
+    <label>URL de l'endpoint issue (mettre <code>{ISSUE_GUID}</code> à la place du GUID)</label>
+    <input id="issueEndpoint" placeholder="https://omnissa-euc1.lookout.com/les/api/…/issues/{ISSUE_GUID}" />
+
+    <label>Chemin du device_id dans la réponse (clés séparées par des points)</label>
+    <input id="devicePath" placeholder="ex. device.id  ou  data.device_guid" />
+
+    <label>Chemin de la connexion (laisser vide si la connexion est fixe)</label>
+    <input id="connectionPath" placeholder="ex. device.connection_id" />
+
+    <label>Connexion fixe (si le chemin ci-dessus est vide)</label>
+    <input id="connectionFixed" placeholder="a65ab8a2-5310-11ee-8e12-06323aa8b71b" />
+
+    <label>Host de l'API PII</label>
+    <input id="host" placeholder="https://omnissa-euc1.lookout.com" />
+
+    <button id="save">Enregistrer</button>
+    <div id="msg"></div>
+    <script src="options.js"></script>
+  </body>
+</html>

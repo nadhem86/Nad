@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <h1>Lookout PII</h1>
+
+    <div id="status" class="card">
+      <div class="row"><span>auth-token</span><b id="st-token">—</b></div>
+      <div class="row"><span>ent-guid</span><b id="st-ent">—</b></div>
+      <div class="row"><span>connexion</span><b id="st-conn">—</b></div>
+      <div class="row"><span>schéma issue</span><b id="st-learn">—</b></div>
+    </div>
+
+    <p class="hint">
+      1. Connecte-toi à la console Lookout et ouvre <b>une</b> issue.<br />
+      2. Clique <b>Apprendre</b> (une seule fois).<br />
+      3. Colle tes liens d'issues ci-dessous et clique <b>Exporter</b>.
+    </p>
+
+    <div class="btns">
+      <button id="btn-learn">Apprendre</button>
+      <button id="btn-reset" class="ghost">Réinitialiser</button>
+    </div>
+    <div id="learn-msg" class="msg"></div>
+
+    <textarea
+      id="issues"
+      rows="7"
+      placeholder="https://omnissa-euc1.lookout.com/&lt;ent&gt;/issues/&lt;guid&gt;
+… un lien par ligne …"
+    ></textarea>
+
+    <button id="btn-run" class="primary">Exporter en CSV</button>
+
+    <div id="progress" class="msg"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

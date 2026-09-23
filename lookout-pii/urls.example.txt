@@ -1,0 +1,4 @@
+# Une URL /pii par ligne (le /pii est ajouté s'il manque).
+# Remplace <conn> par ton GUID de connexion MDM.
+https://omnissa-euc1.lookout.com/mdm/v1/connections/<conn>/devices/517493/pii
+https://omnissa-euc1.lookout.com/mdm/v1/connections/<conn>/devices/676307

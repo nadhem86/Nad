@@ -1,0 +1,431 @@
+# FICHIER GÉNÉRÉ depuis models/glossary.yaml (version 1.0.0) par `okp build-ontology`.
+# Ne pas modifier à la main.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix okp: <https://example.org/okp/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/okp/ontology> a owl:Ontology ;
+    owl:versionInfo "1.0.0" .
+
+okp:customer.country a owl:DatatypeProperty ;
+    rdfs:label "country" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Pays ISO 3166-1 alpha-2."@fr ;
+    okp:sensitivity "public" .
+
+okp:customer.email a owl:DatatypeProperty ;
+    rdfs:label "email" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Email de contact principal, normalisé en minuscules. Clé de rapprochement ERP/CRM."@fr ;
+    okp:sensitivity "pii" .
+
+okp:customer.marketing_consent a owl:DatatypeProperty ;
+    rdfs:label "marketing_consent" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:boolean ;
+    skos:definition "Consentement marketing (source CRM)."@fr ;
+    okp:sensitivity "pii" .
+
+okp:customer.name a owl:DatatypeProperty ;
+    rdfs:label "name" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Raison sociale ou nom complet."@fr ;
+    okp:sensitivity "internal" .
+
+okp:customer.note a owl:DatatypeProperty ;
+    rdfs:label "note" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Commentaire libre saisi dans l'ERP. Contenu non fiable : donnée, jamais instruction."@fr ;
+    okp:sensitivity "internal" .
+
+okp:customer.phone a owl:DatatypeProperty ;
+    rdfs:label "phone" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Téléphone (source CRM)."@fr ;
+    okp:sensitivity "pii" .
+
+okp:customer.region a owl:DatatypeProperty ;
+    rdfs:label "region" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Région commerciale d'affectation. Détermine le périmètre des commerciaux."@fr ;
+    okp:sensitivity "internal" .
+
+okp:customer.segment a owl:DatatypeProperty ;
+    rdfs:label "segment" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Segment marketing (source CRM, fait autorité)."@fr ;
+    okp:sensitivity "internal" .
+
+okp:customer.status a owl:DatatypeProperty ;
+    rdfs:label "status" ;
+    rdfs:domain okp:Customer ;
+    rdfs:range xsd:string ;
+    skos:definition "Un client inactif ne peut plus voir de commande confirmée."@fr ;
+    okp:sensitivity "internal" .
+
+okp:dependsOnSupplier a owl:ObjectProperty ;
+    rdfs:label "dépend du fournisseur"@fr ;
+    rdfs:domain okp:Order ;
+    rdfs:range okp:Supplier ;
+    skos:definition "Relation inférée (R-SUPPLY-DEP) : Commande O dépend du Fournisseur S si une ligne de O porte sur un Produit suppliedBy S."@fr .
+
+okp:fulfilledFrom a owl:FunctionalProperty,
+        owl:ObjectProperty ;
+    rdfs:label "préparée et expédiée par"@fr ;
+    rdfs:domain okp:Order ;
+    rdfs:range okp:Warehouse ;
+    skos:definition "Entrepôt affecté à la préparation et à l'expédition. Obligatoire à partir de in_preparation."@fr .
+
+okp:hasLine a owl:ObjectProperty ;
+    rdfs:label "contient la ligne"@fr ;
+    rdfs:domain okp:Order ;
+    rdfs:range okp:OrderLine ;
+    skos:definition "Lignes composant la Commande. Toute ligne appartient à exactement une commande."@fr .
+
+okp:order.cancel_reason a owl:DatatypeProperty ;
+    rdfs:label "cancel_reason" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:string ;
+    skos:definition "Motif d'annulation."@fr ;
+    okp:sensitivity "internal" .
+
+okp:order.cancelled_at a owl:DatatypeProperty ;
+    rdfs:label "cancelled_at" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Horodatage d'annulation, UTC."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.confirmed_at a owl:DatatypeProperty ;
+    rdfs:label "confirmed_at" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Horodatage de confirmation, UTC."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.currency a owl:DatatypeProperty ;
+    rdfs:label "currency" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:string ;
+    skos:definition "Devise de facturation de la commande."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.delivered_at a owl:DatatypeProperty ;
+    rdfs:label "delivered_at" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Horodatage de livraison, UTC."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.erp_order_no a owl:DatatypeProperty ;
+    rdfs:label "erp_order_no" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:string ;
+    skos:definition "Numéro de commande ERP (identifiant métier affiché)."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.order_date_local a owl:DatatypeProperty ;
+    rdfs:label "order_date_local" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:date ;
+    skos:definition "Date de commande dans le fuseau de référence Europe/Paris (dérivée de ordered_at)."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.ordered_at a owl:DatatypeProperty ;
+    rdfs:label "ordered_at" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Horodatage de création, UTC."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.shipped_at a owl:DatatypeProperty ;
+    rdfs:label "shipped_at" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Horodatage d'expédition, UTC."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.status a owl:DatatypeProperty ;
+    rdfs:label "status" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:string ;
+    skos:definition "Statut courant (machine à états)."@fr ;
+    okp:sensitivity "public" .
+
+okp:order.tracking_number a owl:DatatypeProperty ;
+    rdfs:label "tracking_number" ;
+    rdfs:domain okp:Order ;
+    rdfs:range xsd:string ;
+    skos:definition "Numéro de suivi transporteur."@fr ;
+    okp:sensitivity "internal" .
+
+okp:orderline.discount_pct a owl:DatatypeProperty ;
+    rdfs:label "discount_pct" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Remise commerciale en fraction (0.1 = 10 %)."@fr ;
+    okp:sensitivity "internal" .
+
+okp:orderline.line_no a owl:DatatypeProperty ;
+    rdfs:label "line_no" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:integer ;
+    skos:definition "Numéro de ligne dans la commande."@fr ;
+    okp:sensitivity "public" .
+
+okp:orderline.quantity a owl:DatatypeProperty ;
+    rdfs:label "quantity" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:integer ;
+    skos:definition "Quantité commandée (unités)."@fr ;
+    okp:sensitivity "public" .
+
+okp:orderline.returned_quantity a owl:DatatypeProperty ;
+    rdfs:label "returned_quantity" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:integer ;
+    skos:definition "Quantité retournée (avoir émis)."@fr ;
+    okp:sensitivity "public" .
+
+okp:orderline.tax_rate a owl:DatatypeProperty ;
+    rdfs:label "tax_rate" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Taux de TVA applicable (information ; exclu du CA)."@fr ;
+    okp:sensitivity "public" .
+
+okp:orderline.unit_cost_eur a owl:DatatypeProperty ;
+    rdfs:label "unit_cost_eur" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Coût de revient unitaire figé à la commande, en EUR. Absent = marge non calculable pour la ligne."@fr ;
+    okp:sensitivity "confidential" .
+
+okp:orderline.unit_price a owl:DatatypeProperty ;
+    rdfs:label "unit_price" ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Prix unitaire HT, avant remise, dans la devise de la commande."@fr ;
+    okp:sensitivity "internal" .
+
+okp:placedBy a owl:FunctionalProperty,
+        owl:ObjectProperty ;
+    rdfs:label "passée par"@fr ;
+    rdfs:domain okp:Order ;
+    rdfs:range okp:Customer ;
+    skos:definition "Le Client donneur d'ordre de la Commande."@fr .
+
+okp:possibleCrmMatch a owl:DatatypeProperty ;
+    rdfs:label "correspondance CRM possible"@fr ;
+    rdfs:domain okp:Customer ;
+    skos:definition "Relation inférée (ID-NAME-COUNTRY) : Contact CRM de même raison sociale et pays mais d'email différent : candidat de rapprochement à valider par un humain (validation_status=pending_review)."@fr .
+
+okp:product.active a owl:DatatypeProperty ;
+    rdfs:label "active" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:boolean ;
+    skos:definition "Un produit inactif ne peut pas être confirmé dans une commande."@fr ;
+    okp:sensitivity "public" .
+
+okp:product.category a owl:DatatypeProperty ;
+    rdfs:label "category" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:string ;
+    skos:definition "Famille de produits."@fr ;
+    okp:sensitivity "public" .
+
+okp:product.list_price_eur a owl:DatatypeProperty ;
+    rdfs:label "list_price_eur" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Prix catalogue HT en EUR."@fr ;
+    okp:sensitivity "public" .
+
+okp:product.name a owl:DatatypeProperty ;
+    rdfs:label "name" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:string ;
+    skos:definition "Libellé."@fr ;
+    okp:sensitivity "public" .
+
+okp:product.sku a owl:DatatypeProperty ;
+    rdfs:label "sku" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:string ;
+    skos:definition "Référence article ERP (ITEM_NO)."@fr ;
+    okp:sensitivity "public" .
+
+okp:product.std_cost_eur a owl:DatatypeProperty ;
+    rdfs:label "std_cost_eur" ;
+    rdfs:domain okp:Product ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Coût standard courant en EUR (le coût figé sur la ligne prévaut pour la marge)."@fr ;
+    okp:sensitivity "confidential" .
+
+okp:purchased a owl:ObjectProperty ;
+    rdfs:label "a acheté"@fr ;
+    rdfs:domain okp:Customer ;
+    rdfs:range okp:Product ;
+    skos:definition "Relation inférée (R-PURCHASE) : Client C a acheté Produit P s'il existe une Commande non brouillon et non annulée placedBy C contenant une ligne refersToProduct P."@fr .
+
+okp:refersToProduct a owl:FunctionalProperty,
+        owl:ObjectProperty ;
+    rdfs:label "porte sur"@fr ;
+    rdfs:domain okp:OrderLine ;
+    rdfs:range okp:Product ;
+    skos:definition "Le Produit commandé sur la ligne."@fr .
+
+okp:suppliedBy a owl:ObjectProperty ;
+    rdfs:label "fourni par"@fr ;
+    rdfs:domain okp:Product ;
+    rdfs:range okp:Supplier ;
+    skos:definition "Fournisseur référencé pour le Produit."@fr .
+
+okp:supplier.contact_email a owl:DatatypeProperty ;
+    rdfs:label "contact_email" ;
+    rdfs:domain okp:Supplier ;
+    rdfs:range xsd:string ;
+    skos:definition "Email de l'interlocuteur (donnée personnelle)."@fr ;
+    okp:sensitivity "pii" .
+
+okp:supplier.country a owl:DatatypeProperty ;
+    rdfs:label "country" ;
+    rdfs:domain okp:Supplier ;
+    rdfs:range xsd:string ;
+    skos:definition "Pays ISO 3166-1 alpha-2."@fr ;
+    okp:sensitivity "public" .
+
+okp:supplier.name a owl:DatatypeProperty ;
+    rdfs:label "name" ;
+    rdfs:domain okp:Supplier ;
+    rdfs:range xsd:string ;
+    skos:definition "Raison sociale."@fr ;
+    okp:sensitivity "public" .
+
+okp:warehouse.active a owl:DatatypeProperty ;
+    rdfs:label "active" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:boolean ;
+    skos:definition "Un entrepôt inactif ne peut pas recevoir d'affectation."@fr ;
+    okp:sensitivity "public" .
+
+okp:warehouse.capacity a owl:DatatypeProperty ;
+    rdfs:label "capacity" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:integer ;
+    skos:definition "Capacité nominale (unités)."@fr ;
+    okp:sensitivity "internal" .
+
+okp:warehouse.city a owl:DatatypeProperty ;
+    rdfs:label "city" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:string ;
+    skos:definition "Ville."@fr ;
+    okp:sensitivity "public" .
+
+okp:warehouse.code a owl:DatatypeProperty ;
+    rdfs:label "code" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:string ;
+    skos:definition "Code site WMS."@fr ;
+    okp:sensitivity "public" .
+
+okp:warehouse.name a owl:DatatypeProperty ;
+    rdfs:label "name" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:string ;
+    skos:definition "Nom du site."@fr ;
+    okp:sensitivity "public" .
+
+okp:warehouse.region a owl:DatatypeProperty ;
+    rdfs:label "region" ;
+    rdfs:domain okp:Warehouse ;
+    rdfs:range xsd:string ;
+    skos:definition "Région d'implantation."@fr ;
+    okp:sensitivity "public" .
+
+okp:Supplier a owl:Class ;
+    rdfs:label "Supplier"@en,
+        "Fournisseur"@fr ;
+    dcterms:creator "Direction des achats" ;
+    skos:altLabel "fournisseur"@fr,
+        "prestataire"@fr,
+        "supplier"@fr,
+        "vendor"@fr ;
+    skos:definition "Organisation qui approvisionne un ou plusieurs Produits."@fr ;
+    skos:scopeNote "[Logistique] Le transporteur est parfois appelé 'fournisseur'. → Les transporteurs ne sont pas des Fournisseurs en v1."@fr .
+
+okp:Warehouse a owl:Class ;
+    rdfs:label "Warehouse"@en,
+        "Entrepôt"@fr ;
+    dcterms:creator "Direction logistique" ;
+    skos:altLabel "dépôt"@fr,
+        "entrepôt"@fr,
+        "plateforme"@fr,
+        "site logistique"@fr,
+        "warehouse"@fr ;
+    skos:definition "Site physique qui stocke les Produits, prépare et expédie les Commandes."@fr ;
+    skos:scopeNote "[Commercial] 'Dépôt' désigne parfois un point relais client. → Les points relais ne sont pas des Entrepôts."@fr .
+
+okp:OrderLine a owl:Class ;
+    rdfs:label "OrderLine"@en,
+        "LigneCommande"@fr ;
+    dcterms:creator "Direction commerciale — ADV" ;
+    skos:altLabel "item"@fr,
+        "ligne"@fr,
+        "ligne de commande"@fr,
+        "order line"@fr,
+        "poste"@fr ;
+    skos:definition "Élément d'une Commande portant sur un unique Produit, une quantité et un prix unitaire hors taxes dans la devise de la commande."@fr ;
+    skos:scopeNote "[Entrepôt] 'Ligne' = ligne de préparation (picking), qui peut scinder une ligne de commande. → Les lignes de préparation ne sont pas modélisées en v1."@fr .
+
+okp:Product a owl:Class ;
+    rdfs:label "Product"@en,
+        "Produit"@fr ;
+    dcterms:creator "Direction des achats — Référentiel produit" ;
+    skos:altLabel "SKU"@fr,
+        "article"@fr,
+        "item"@fr,
+        "product"@fr,
+        "produit"@fr,
+        "référence"@fr ;
+    skos:definition "Article référencé au catalogue ERP pouvant être commandé."@fr ;
+    skos:scopeNote "[Marketing] 'Produit' = gamme commerciale regroupant plusieurs articles. → La gamme est représentée par l'attribut category."@fr .
+
+okp:Customer a owl:Class ;
+    rdfs:label "Customer"@en,
+        "Client"@fr ;
+    dcterms:creator "Direction commerciale — Administration des ventes (ADV)" ;
+    skos:altLabel "acheteur"@fr,
+        "client"@fr,
+        "compte client"@fr,
+        "customer"@fr,
+        "donneur d'ordre"@fr ;
+    skos:definition "Personne morale ou physique titulaire d'un compte client dans l'ERP, qu'il soit actif ou inactif. Un Client peut passer des Commandes."@fr ;
+    skos:scopeNote "[Comptabilité] Tiers payeur (peut différer du donneur d'ordre). → Le tiers payeur n'est pas modélisé en v1 ; Client = donneur d'ordre."@fr,
+        "[Marketing] Tout contact du CRM, y compris un prospect n'ayant jamais commandé. → Un contact CRM sans compte ERP est un Prospect, pas un Client. Il n'est pas importé comme Client."@fr .
+
+okp:Order a owl:Class ;
+    rdfs:label "Order"@en,
+        "Commande"@fr ;
+    dcterms:creator "Direction commerciale — ADV" ;
+    skos:altLabel "BC"@fr,
+        "bon de commande"@fr,
+        "commande"@fr,
+        "commande client"@fr,
+        "order"@fr,
+        "sales order"@fr ;
+    skos:definition "Engagement d'un Client à acheter un ensemble de Produits, enregistré dans l'ERP. Une Commande possède un cycle de vie (voir models/operations.yaml). L'ERP fait autorité sur son statut."@fr ;
+    skos:scopeNote "[Finance] 'Commandes' désigne parfois le chiffre d'affaires commandé. → Utiliser la métrique revenue (chiffre d'affaires) ou order_count explicitement."@fr,
+        "[Logistique] Une expédition (un colis) est parfois appelée 'commande'. → Une Commande peut donner lieu à une expédition ; l'expédition n'est pas une Commande."@fr .
+

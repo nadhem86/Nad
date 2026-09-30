@@ -1,0 +1,116 @@
+# =============================================================================
+# Couche opérationnelle : cycle de vie de la Commande et actions métier
+# -----------------------------------------------------------------------------
+# L'ERP fait autorité sur le statut des commandes. Une action :
+#   1. est authentifiée et autorisée côté serveur (models/policies.yaml) ;
+#   2. vérifie la transition et les préconditions sur l'état synchronisé ;
+#   3. est exécutée PAR L'ERP via une passerelle (contrôle de concurrence optimiste) ;
+#   4. déclenche une resynchronisation ciblée (core + knowledge graph + inférences) ;
+#   5. est journalisée (action_log pour l'idempotence, audit_log chaîné).
+# Les noms de préconditions référencent des fonctions de okp/operations/preconditions.py ;
+# un test vérifie qu'elles existent toutes.
+# =============================================================================
+version: 1.0.0
+entity: Order
+authority: erp
+
+states:
+  draft: {label: Brouillon, erp_code: DRF, terminal: false}
+  confirmed: {label: Confirmée, erp_code: CNF, terminal: false}
+  in_preparation: {label: En préparation, erp_code: PRP, terminal: false}
+  shipped: {label: Expédiée, erp_code: SHP, terminal: false}
+  delivered: {label: Livrée, erp_code: DLV, terminal: true}
+  cancelled: {label: Annulée, erp_code: CAN, terminal: true}
+
+transitions:
+  - {from: draft, to: confirmed, action: confirm_order}
+  - {from: draft, to: cancelled, action: cancel_order}
+  - {from: confirmed, to: cancelled, action: cancel_order}
+  - {from: in_preparation, to: cancelled, action: cancel_order}
+  - {from: confirmed, to: in_preparation, action: assign_warehouse}
+  - {from: in_preparation, to: shipped, action: ship_order}
+  - {from: shipped, to: delivered, action: deliver_order}
+
+actions:
+  confirm_order:
+    label: Confirmer une commande
+    permission: action.execute:confirm_order
+    input:
+      order_id: {type: string, required: true, description: "Identifiant canonique (ORD-…) ou numéro ERP."}
+      idempotency_key: {type: string, required: true, description: "Clé unique fournie par l'appelant (8 à 128 caractères)."}
+    output: "ActionResult (statut avant/après, autorité, état de synchronisation, identifiant d'audit)."
+    preconditions: [has_lines, positive_quantities, customer_active, products_active]
+    effects:
+      - "ERP : STATUS_CD DRF→CNF, CONFIRMED_TS = maintenant (UTC)."
+      - "Core/KG : order.status et order.confirmed_at remplacés (ancien fait daté valid_to)."
+      - "Inférences recalculées (R-PURCHASE)."
+    errors: [NOT_FOUND, FORBIDDEN, INVALID_TRANSITION, PRECONDITION_FAILED, CONFLICT, IDEMPOTENCY_CONFLICT, SOURCE_UNAVAILABLE]
+    idempotency: "Même clé + même requête → résultat initial rejoué (replayed=true) sans nouvel effet. Même clé + requête différente → IDEMPOTENCY_CONFLICT."
+    audit: "action.requested, action.denied|failed|succeeded avec principal, canal, décision et versions de modèles."
+  cancel_order:
+    label: Annuler une commande
+    permission: action.execute:cancel_order
+    input:
+      order_id: {type: string, required: true}
+      reason: {type: string, required: true, min_length: 5, max_length: 500, description: "Motif (contrainte C-ORD-CANCEL-REASON)."}
+      idempotency_key: {type: string, required: true}
+    output: "ActionResult."
+    preconditions: [not_shipped]
+    effects:
+      - "ERP : STATUS_CD → CAN, CANCELLED_TS, CANCEL_REASON."
+      - "Core/KG : statut remplacé ; la commande sort des métriques de ventes ; R-PURCHASE et R-SUPPLY-DEP recalculées."
+    errors: [NOT_FOUND, FORBIDDEN, INVALID_TRANSITION, PRECONDITION_FAILED, CONFLICT, IDEMPOTENCY_CONFLICT, VALIDATION_ERROR]
+    idempotency: "Idem confirm_order."
+    audit: "Idem ; le motif est journalisé."
+  assign_warehouse:
+    label: Affecter à un entrepôt
+    permission: action.execute:assign_warehouse
+    input:
+      order_id: {type: string, required: true}
+      warehouse_id: {type: string, required: true, description: "Identifiant canonique (WHS-…) ou code WMS."}
+      idempotency_key: {type: string, required: true}
+    output: "ActionResult."
+    preconditions: [warehouse_active, stock_sufficient]
+    effects:
+      - "ERP : WAREHOUSE_CODE, STATUS_CD CNF→PRP."
+      - "Core/KG : relation fulfilledFrom créée, statut remplacé."
+    errors: [NOT_FOUND, FORBIDDEN, INVALID_TRANSITION, PRECONDITION_FAILED, CONFLICT, IDEMPOTENCY_CONFLICT]
+    idempotency: "Idem confirm_order."
+    audit: "Idem."
+  ship_order:
+    label: Expédier une commande
+    permission: action.execute:ship_order
+    input:
+      order_id: {type: string, required: true}
+      tracking_number: {type: string, required: true, pattern: "^[A-Z0-9]{8,20}$"}
+      idempotency_key: {type: string, required: true}
+    output: "ActionResult."
+    preconditions: [warehouse_assigned]
+    effects:
+      - "ERP : STATUS_CD PRP→SHP, SHIPPED_TS, TRACKING_NO."
+      - "Core/KG : statut, shipped_at et tracking_number ; délai de traitement calculable."
+    errors: [NOT_FOUND, FORBIDDEN, INVALID_TRANSITION, PRECONDITION_FAILED, CONFLICT, IDEMPOTENCY_CONFLICT, VALIDATION_ERROR]
+    idempotency: "Idem confirm_order."
+    audit: "Idem."
+  deliver_order:
+    label: Déclarer une commande livrée
+    permission: action.execute:deliver_order
+    input:
+      order_id: {type: string, required: true}
+      idempotency_key: {type: string, required: true}
+    output: "ActionResult."
+    preconditions: []
+    effects: ["ERP : STATUS_CD SHP→DLV, DELIVERED_TS."]
+    errors: [NOT_FOUND, FORBIDDEN, INVALID_TRANSITION, CONFLICT, IDEMPOTENCY_CONFLICT]
+    idempotency: "Idem confirm_order."
+    audit: "Idem."
+
+error_codes:
+  NOT_FOUND: "Entité introuvable OU hors du périmètre du principal (on ne divulgue pas l'existence)."
+  FORBIDDEN: "Permission manquante pour le principal et le canal."
+  INVALID_TRANSITION: "Transition non autorisée depuis le statut courant."
+  PRECONDITION_FAILED: "Une ou plusieurs règles métier ne sont pas satisfaites (détail fourni)."
+  CONFLICT: "Le statut dans l'ERP a changé depuis la dernière synchronisation (concurrence optimiste)."
+  IDEMPOTENCY_CONFLICT: "Clé d'idempotence déjà utilisée pour une requête différente."
+  VALIDATION_ERROR: "Entrée invalide (contrat d'entrée)."
+  SOURCE_UNAVAILABLE: "Le système source faisant autorité n'a pas répondu ; aucune modification locale."

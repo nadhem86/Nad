@@ -1,0 +1,271 @@
+# FICHIER GÉNÉRÉ depuis models/glossary.yaml (version 1.0.0) par `okp build-ontology`.
+# Ne pas modifier à la main.
+@prefix okp: <https://example.org/okp/ontology#> .
+@prefix okps: <https://example.org/okp/ontology/shapes#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+okps:CustomerShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path okp:customer.phone ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:customer.email ;
+            sh:pattern "^[^@\\s]+@[^@\\s]+\\.[a-z]{2,}$" ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path okp:customer.note ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "IDF"^^xsd:string "ARA"^^xsd:string "OCC"^^xsd:string "HDF"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:customer.region ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:customer.country ;
+            sh:pattern "^[A-Z]{2}$" ],
+        [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:path okp:customer.marketing_consent ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "active"^^xsd:string "inactive"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:customer.status ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "PME"^^xsd:string "GRAND_COMPTE"^^xsd:string "PARTICULIER"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:path okp:customer.segment ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:customer.name ] ;
+    sh:targetClass okp:Customer .
+
+okps:OrderLineShape a sh:NodeShape ;
+    sh:property [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path [ sh:inversePath okp:hasLine ] ],
+        [ sh:datatype xsd:integer ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:orderline.returned_quantity ],
+        [ sh:datatype xsd:integer ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1e+00 ;
+            sh:path okp:orderline.line_no ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:orderline.unit_cost_eur ],
+        [ sh:class okp:Product ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:nodeKind sh:IRI ;
+            sh:path okp:refersToProduct ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:maxInclusive 1e+00 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:orderline.discount_pct ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:orderline.unit_price ],
+        [ sh:datatype xsd:integer ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 1e+00 ;
+            sh:path okp:orderline.quantity ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:maxInclusive 1e+00 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:orderline.tax_rate ] ;
+    sh:sparql [ sh:message "C-LINE-RETURNS : La quantité retournée d'une ligne ne dépasse pas la quantité commandée."@fr ;
+            sh:select """PREFIX okp: <https://example.org/okp/ontology#>
+SELECT $this WHERE {
+  $this okp:orderline.quantity ?q ; okp:orderline.returned_quantity ?r .
+  FILTER (?r > ?q)
+}
+""" ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass okp:OrderLine .
+
+okps:OrderShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path okp:order.cancelled_at ],
+        [ sh:class okp:Warehouse ;
+            sh:maxCount 1 ;
+            sh:nodeKind sh:IRI ;
+            sh:path okp:fulfilledFrom ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path okp:order.cancel_reason ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "draft"^^xsd:string "confirmed"^^xsd:string "in_preparation"^^xsd:string "shipped"^^xsd:string "delivered"^^xsd:string "cancelled"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:order.status ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path okp:order.shipped_at ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path okp:order.confirmed_at ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:order.erp_order_no ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path okp:order.tracking_number ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "EUR"^^xsd:string "USD"^^xsd:string "GBP"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:order.currency ],
+        [ sh:class okp:Customer ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:nodeKind sh:IRI ;
+            sh:path okp:placedBy ],
+        [ sh:class okp:OrderLine ;
+            sh:nodeKind sh:IRI ;
+            sh:path okp:hasLine ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:order.ordered_at ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path okp:order.delivered_at ],
+        [ sh:datatype xsd:date ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:order.order_date_local ] ;
+    sh:sparql [ sh:message "C-ORD-WAREHOUSE : Une Commande en préparation, expédiée ou livrée a un Entrepôt affecté."@fr ;
+            sh:select """PREFIX okp: <https://example.org/okp/ontology#>
+SELECT $this WHERE {
+  $this okp:order.status ?s .
+  FILTER (STR(?s) IN ("in_preparation", "shipped", "delivered"))
+  FILTER NOT EXISTS { $this okp:fulfilledFrom ?w }
+}
+""" ;
+            sh:severity sh:Violation ],
+        [ sh:message "C-ORD-CANCEL-REASON : Une Commande annulée porte un motif d'annulation."@fr ;
+            sh:select """PREFIX okp: <https://example.org/okp/ontology#>
+SELECT $this WHERE {
+  $this okp:order.status ?s .
+  FILTER (STR(?s) = "cancelled")
+  FILTER NOT EXISTS { $this okp:order.cancel_reason ?r }
+}
+""" ;
+            sh:severity sh:Warning ],
+        [ sh:message "C-ORD-HAS-LINES : Une Commande hors brouillon et hors annulation a au moins une ligne."@fr ;
+            sh:select """PREFIX okp: <https://example.org/okp/ontology#>
+SELECT $this WHERE {
+  $this okp:order.status ?s .
+  FILTER (STR(?s) NOT IN ("draft", "cancelled"))
+  FILTER NOT EXISTS { $this okp:hasLine ?l }
+}
+""" ;
+            sh:severity sh:Violation ],
+        [ sh:message "C-ORD-SHIP-DATES : Une Commande expédiée ou livrée a shipped_at postérieur ou égal à confirmed_at."@fr ;
+            sh:select """PREFIX okp: <https://example.org/okp/ontology#>
+SELECT $this WHERE {
+  $this okp:order.status ?s .
+  FILTER (STR(?s) IN ("shipped", "delivered"))
+  OPTIONAL { $this okp:order.shipped_at ?sh }
+  OPTIONAL { $this okp:order.confirmed_at ?c }
+  FILTER (!BOUND(?sh) || !BOUND(?c) || ?sh < ?c)
+}
+""" ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass okp:Order .
+
+okps:ProductShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:product.sku ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:product.name ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:product.std_cost_eur ],
+        [ sh:class okp:Supplier ;
+            sh:nodeKind sh:IRI ;
+            sh:path okp:suppliedBy ],
+        [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:product.active ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:product.list_price_eur ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "ELECTRONIQUE"^^xsd:string "MOBILIER"^^xsd:string "CONSOMMABLE"^^xsd:string "OUTILLAGE"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:product.category ] ;
+    sh:targetClass okp:Product .
+
+okps:SupplierShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:supplier.country ;
+            sh:pattern "^[A-Z]{2}$" ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path okp:supplier.contact_email ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:supplier.name ] ;
+    sh:targetClass okp:Supplier .
+
+okps:WarehouseShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:warehouse.city ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:warehouse.name ],
+        [ sh:datatype xsd:integer ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0e+00 ;
+            sh:path okp:warehouse.capacity ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "IDF"^^xsd:string "ARA"^^xsd:string "OCC"^^xsd:string "HDF"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:warehouse.region ],
+        [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:warehouse.active ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path okp:warehouse.code ] ;
+    sh:targetClass okp:Warehouse .
+

@@ -1,0 +1,35 @@
+[project]
+name = "order-knowledge-platform"
+version = "0.1.0"
+description = "Infrastructure métier réutilisable : ontologie, knowledge graph, modèle sémantique, couche opérationnelle et outils pour agents IA (exemple : gestion de commandes)."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.30",
+  "pydantic>=2.7,<3",
+  "PyYAML>=6.0",
+  "rdflib>=7.0,<8",
+  "pyshacl>=0.26",
+  "mcp>=2.0,<3",
+  "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+okp = "okp.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["okp*"]
+
+[tool.setuptools.package-data]
+okp = ["migrations/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

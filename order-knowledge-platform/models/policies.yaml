@@ -1,0 +1,83 @@
+# =============================================================================
+# Politique d'accès (RBAC complété par des attributs — ABAC)
+# -----------------------------------------------------------------------------
+# Appliquée côté serveur par okp/security/policy.py pour TOUTES les interfaces
+# (API REST, outils agent HTTP, serveur MCP, CLI). Aucune permission ne dépend d'un prompt.
+# Permissions :
+#   entity.read:<Concept|*>        lecture d'entités et de relations
+#   field.read:<pii|confidential>  lecture de champs sensibles (sinon masqués)
+#   metric.read:<metric|*>         calcul d'une métrique (+ sensitivity de la métrique)
+#   action.execute:<action>        exécution d'une action
+#   audit.read                     lecture du journal d'audit
+#   ingest.run                     lancement d'ingestions
+# Portées (scopes) — attributs du principal :
+#   regions     → restreint Clients, Commandes, Lignes et métriques à customer.region ∈ regions
+#   warehouses  → restreint les actions logistiques aux entrepôts listés
+# =============================================================================
+version: 1.0.0
+
+roles:
+  admin:
+    description: "Administrateur de la plateforme."
+    permissions: ["*"]
+  sales_manager:
+    description: "Responsable ADV : toutes régions, données personnelles et marges."
+    permissions:
+      - "entity.read:*"
+      - "field.read:pii"
+      - "field.read:confidential"
+      - "metric.read:*"
+      - "action.execute:confirm_order"
+      - "action.execute:cancel_order"
+  sales_rep:
+    description: "Commercial : limité à ses régions, pas de marge, pas d'email client en clair."
+    permissions:
+      - "entity.read:*"
+      - "metric.read:order_count"
+      - "metric.read:quantity_sold"
+      - "metric.read:revenue"
+      - "metric.read:average_order_value"
+      - "metric.read:cancellation_rate"
+      - "action.execute:confirm_order"
+      - "action.execute:cancel_order"
+    scope_attributes: [regions]
+  warehouse_operator:
+    description: "Opérateur logistique : actions sur ses entrepôts, aucune donnée financière."
+    permissions:
+      - "entity.read:Order"
+      - "entity.read:OrderLine"
+      - "entity.read:Product"
+      - "entity.read:Warehouse"
+      - "entity.read:Supplier"
+      - "metric.read:quantity_sold"
+      - "metric.read:processing_time_hours"
+      - "metric.read:stock_on_hand"
+      - "action.execute:assign_warehouse"
+      - "action.execute:ship_order"
+      - "action.execute:deliver_order"
+    scope_attributes: [warehouses]
+  analyst:
+    description: "Analyste : toutes métriques y compris marges, aucune donnée personnelle, aucune action."
+    permissions:
+      - "entity.read:*"
+      - "field.read:confidential"
+      - "metric.read:*"
+  integration:
+    description: "Compte technique d'ingestion."
+    permissions: ["ingest.run", "entity.read:*"]
+
+# Plafonds par canal : les permissions effectives = permissions du rôle MOINS les refus du canal.
+# Le canal est déterminé par le point d'entrée serveur (route /agent/*, serveur MCP),
+# jamais par une déclaration du client ou le contenu d'un prompt.
+channels:
+  api:
+    deny: []
+  cli:
+    deny: []
+  agent:
+    description: "Outils exposés aux agents IA (HTTP /agent/* et MCP)."
+    deny:
+      - "field.read:pii"              # minimisation : un agent ne reçoit jamais de données personnelles
+      - "action.execute:cancel_order" # annulation réservée à un humain (irréversible)
+      - "audit.read"
+      - "ingest.run"

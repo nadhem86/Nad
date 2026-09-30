@@ -1,0 +1,35 @@
+# Principaux de DÉMONSTRATION. Les clés API ne sont jamais stockées en clair : seule leur
+# empreinte SHA-256 figure ici. Les clés de démo sont listées dans .env.example.
+# En production : remplacer par un fournisseur d'identité (OIDC) — non implémenté ici.
+principals:
+  - id: alice.admin
+    display_name: "Alice (admin)"
+    roles: [admin]
+    api_key_sha256: ac5bb3526d3be432ba19fb1fc0712d350c160bd2169cd24401c9fcaeaac2d860
+  - id: bruno.manager
+    display_name: "Bruno (responsable ADV)"
+    roles: [sales_manager]
+    api_key_sha256: b19ae5019d1b8a2f3d25c7f5db0e40b4256f97d2721522e2a620f4be7c2851c2
+  - id: chloe.rep
+    display_name: "Chloé (commerciale IDF)"
+    roles: [sales_rep]
+    attributes: {regions: [IDF]}
+    api_key_sha256: 38271ceba9e0e10923135055efe230eb9acab9488fcd481a968ce8c8f5c70956
+  - id: david.rep
+    display_name: "David (commercial ARA/OCC)"
+    roles: [sales_rep]
+    attributes: {regions: [ARA, OCC]}
+    api_key_sha256: 34a7338b75b46c296c639fc860776b4975720ca0ecfacc3448b7ccfe9062747c
+  - id: emma.ops
+    display_name: "Emma (opératrice entrepôt Lyon)"
+    roles: [warehouse_operator]
+    attributes: {warehouses: [LYS1]}
+    api_key_sha256: c02dfbe61ddef462c926184b404f1e2def8cfc2695d6756810645f002921c479
+  - id: farid.analyst
+    display_name: "Farid (analyste)"
+    roles: [analyst]
+    api_key_sha256: ba041bbd3d5f84055d10645d916eeace5ad28692224918c320e627f95bccbd3b
+  - id: ingest.bot
+    display_name: "Compte technique d'ingestion"
+    roles: [integration]
+    api_key_sha256: 645bd54962e1648cc9c74875be240a27c424672bd5e7e0a3c2ee888735a6df7f

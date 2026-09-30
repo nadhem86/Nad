@@ -1,0 +1,29 @@
+# Démonstration locale. `docker compose run --rm init` prépare les données fictives,
+# puis `docker compose up api` expose l'API sur http://localhost:8000/docs.
+services:
+  init:
+    build: .
+    command: ["sh", "-c", "python -m okp generate-demo --force && python -m okp --as ingest.bot ingest --mode full && python -m okp validate > /dev/null && echo 'données prêtes'"]
+    env_file: [.env]
+    environment:
+      OKP_DATA_DIR: /data
+      OKP_DB_PATH: /data/okp.sqlite
+      OKP_SOURCES_DIR: /data/sources
+    volumes: [okp-data:/data]
+    profiles: [setup]
+
+  api:
+    build: .
+    env_file: [.env]
+    environment:
+      OKP_DATA_DIR: /data
+      OKP_DB_PATH: /data/okp.sqlite
+      OKP_SOURCES_DIR: /data/sources
+    volumes: [okp-data:/data]
+    ports: ["127.0.0.1:8000:8000"]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  okp-data:

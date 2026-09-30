@@ -1,0 +1,11 @@
+# Versions minimales testées (voir docs/architecture.md). Figer via un lock en production.
+fastapi>=0.115,<1
+uvicorn>=0.30
+pydantic>=2.7,<3
+PyYAML>=6.0
+rdflib>=7.0,<8
+pyshacl>=0.26
+mcp>=2.0,<3
+tzdata>=2024.1
+httpx>=0.27
+pytest>=8

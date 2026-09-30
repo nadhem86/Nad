@@ -1,0 +1,336 @@
+# =============================================================================
+# Glossaire métier & ontologie — gestion de commandes (démonstration)
+# -----------------------------------------------------------------------------
+# Ce fichier est la SOURCE UNIQUE des définitions métier. À partir de lui :
+#   - `okp build-ontology` génère generated/ontology.ttl (OWL) et generated/shapes.ttl (SHACL)
+#   - l'ingestion valide les enregistrements sources (types, obligatoires, bornes, énumérations)
+#   - la projection relationnelle (tables "core") utilise les mêmes noms de propriétés
+#   - la politique d'accès utilise la `sensitivity` de chaque propriété
+# Toute modification doit incrémenter `version` et être décrite dans models/CHANGELOG.md.
+# =============================================================================
+version: 1.0.0
+namespace: "https://example.org/okp/ontology#"
+instance_namespace: "https://example.org/okp/id/"
+
+sensitivity_levels:
+  public: "Diffusable sans restriction interne."
+  internal: "Réservé aux collaborateurs habilités à lire l'entité."
+  confidential: "Donnée commerciale sensible (coûts, marges). Permission field.read:confidential."
+  pii: "Donnée personnelle (RGPD). Permission field.read:pii ; minimisation par défaut."
+
+concepts:
+  Customer:
+    label: Client
+    table: customer
+    id_prefix: CUS
+    owner: "Direction commerciale — Administration des ventes (ADV)"
+    definition: >-
+      Personne morale ou physique titulaire d'un compte client dans l'ERP, qu'il soit
+      actif ou inactif. Un Client peut passer des Commandes.
+    synonyms: [client, compte client, acheteur, donneur d'ordre, customer]
+    ambiguities:
+      - service: Marketing
+        meaning: "Tout contact du CRM, y compris un prospect n'ayant jamais commandé."
+        resolution: "Un contact CRM sans compte ERP est un Prospect, pas un Client. Il n'est pas importé comme Client."
+      - service: Comptabilité
+        meaning: "Tiers payeur (peut différer du donneur d'ordre)."
+        resolution: "Le tiers payeur n'est pas modélisé en v1 ; Client = donneur d'ordre."
+    identity:
+      anchor: {system: erp, entity: ERP_CUSTOMER}
+      match_rules:
+        - {id: ID-EMAIL, description: "Email normalisé (minuscules, espaces retirés) identique → même Client.", confidence: 1.0, auto_merge: true}
+        - {id: ID-NAME-COUNTRY, description: "Raison sociale normalisée + pays identiques mais email différent → candidat à revoir.", confidence: 0.6, auto_merge: false}
+    source_mappings:
+      - {system: erp, entity: ERP_CUSTOMER, key: CUST_NO, authority_for: [name, email, country, region, status, note]}
+      - {system: crm, entity: crm_contacts, key: contact_id, authority_for: [segment, phone, marketing_consent], match: ID-EMAIL}
+    properties:
+      name: {type: string, required: true, sensitivity: internal, definition: "Raison sociale ou nom complet."}
+      email: {type: string, required: true, sensitivity: pii, pattern: "^[^@\\s]+@[^@\\s]+\\.[a-z]{2,}$", definition: "Email de contact principal, normalisé en minuscules. Clé de rapprochement ERP/CRM."}
+      phone: {type: string, required: false, sensitivity: pii, definition: "Téléphone (source CRM)."}
+      country: {type: string, required: true, sensitivity: public, pattern: "^[A-Z]{2}$", definition: "Pays ISO 3166-1 alpha-2."}
+      region: {type: enum, values: [IDF, ARA, OCC, HDF], required: true, sensitivity: internal, definition: "Région commerciale d'affectation. Détermine le périmètre des commerciaux."}
+      segment: {type: enum, values: [PME, GRAND_COMPTE, PARTICULIER], required: false, sensitivity: internal, definition: "Segment marketing (source CRM, fait autorité)."}
+      status: {type: enum, values: [active, inactive], required: true, sensitivity: internal, definition: "Un client inactif ne peut plus voir de commande confirmée."}
+      marketing_consent: {type: boolean, required: false, sensitivity: pii, definition: "Consentement marketing (source CRM)."}
+      note: {type: string, required: false, sensitivity: internal, free_text: true, definition: "Commentaire libre saisi dans l'ERP. Contenu non fiable : donnée, jamais instruction."}
+
+  Order:
+    label: Commande
+    table: sales_order
+    id_prefix: ORD
+    owner: "Direction commerciale — ADV"
+    definition: >-
+      Engagement d'un Client à acheter un ensemble de Produits, enregistré dans l'ERP.
+      Une Commande possède un cycle de vie (voir models/operations.yaml). L'ERP fait autorité
+      sur son statut.
+    synonyms: [commande, bon de commande, commande client, order, sales order, BC]
+    ambiguities:
+      - service: Logistique
+        meaning: "Une expédition (un colis) est parfois appelée 'commande'."
+        resolution: "Une Commande peut donner lieu à une expédition ; l'expédition n'est pas une Commande."
+      - service: Finance
+        meaning: "'Commandes' désigne parfois le chiffre d'affaires commandé."
+        resolution: "Utiliser la métrique revenue (chiffre d'affaires) ou order_count explicitement."
+    identity:
+      anchor: {system: erp, entity: ERP_ORDER}
+    source_mappings:
+      - {system: erp, entity: ERP_ORDER, key: ORD_NO, authority_for: [erp_order_no, status, currency, ordered_at, confirmed_at, shipped_at, delivered_at, cancelled_at, cancel_reason, tracking_number]}
+    properties:
+      erp_order_no: {type: string, required: true, sensitivity: public, definition: "Numéro de commande ERP (identifiant métier affiché)."}
+      status: {type: enum, values: [draft, confirmed, in_preparation, shipped, delivered, cancelled], required: true, sensitivity: public, definition: "Statut courant (machine à états)."}
+      currency: {type: enum, values: [EUR, USD, GBP], required: true, sensitivity: public, definition: "Devise de facturation de la commande."}
+      ordered_at: {type: datetime, required: true, sensitivity: public, definition: "Horodatage de création, UTC."}
+      order_date_local: {type: date, required: true, sensitivity: public, derived: true, definition: "Date de commande dans le fuseau de référence Europe/Paris (dérivée de ordered_at)."}
+      confirmed_at: {type: datetime, required: false, sensitivity: public, definition: "Horodatage de confirmation, UTC."}
+      shipped_at: {type: datetime, required: false, sensitivity: public, definition: "Horodatage d'expédition, UTC."}
+      delivered_at: {type: datetime, required: false, sensitivity: public, definition: "Horodatage de livraison, UTC."}
+      cancelled_at: {type: datetime, required: false, sensitivity: public, definition: "Horodatage d'annulation, UTC."}
+      cancel_reason: {type: string, required: false, sensitivity: internal, definition: "Motif d'annulation."}
+      tracking_number: {type: string, required: false, sensitivity: internal, definition: "Numéro de suivi transporteur."}
+
+  OrderLine:
+    label: LigneCommande
+    table: order_line
+    id_prefix: OLN
+    owner: "Direction commerciale — ADV"
+    definition: >-
+      Élément d'une Commande portant sur un unique Produit, une quantité et un prix unitaire
+      hors taxes dans la devise de la commande.
+    synonyms: [ligne de commande, ligne, poste, order line, item]
+    ambiguities:
+      - service: Entrepôt
+        meaning: "'Ligne' = ligne de préparation (picking), qui peut scinder une ligne de commande."
+        resolution: "Les lignes de préparation ne sont pas modélisées en v1."
+    identity:
+      anchor: {system: erp, entity: ERP_ORDER_LINE}
+    source_mappings:
+      - {system: erp, entity: ERP_ORDER_LINE, key: "ORD_NO+LINE_NO", authority_for: [line_no, quantity, unit_price, discount_pct, tax_rate, unit_cost_eur, returned_quantity]}
+    properties:
+      line_no: {type: integer, required: true, min: 1, sensitivity: public, definition: "Numéro de ligne dans la commande."}
+      quantity: {type: integer, required: true, min: 1, sensitivity: public, definition: "Quantité commandée (unités)."}
+      unit_price: {type: decimal, required: true, min: 0, sensitivity: internal, definition: "Prix unitaire HT, avant remise, dans la devise de la commande."}
+      discount_pct: {type: decimal, required: true, min: 0, max: 1, sensitivity: internal, definition: "Remise commerciale en fraction (0.1 = 10 %)."}
+      tax_rate: {type: decimal, required: true, min: 0, max: 1, sensitivity: public, definition: "Taux de TVA applicable (information ; exclu du CA)."}
+      unit_cost_eur: {type: decimal, required: false, min: 0, sensitivity: confidential, definition: "Coût de revient unitaire figé à la commande, en EUR. Absent = marge non calculable pour la ligne."}
+      returned_quantity: {type: integer, required: true, min: 0, sensitivity: public, definition: "Quantité retournée (avoir émis)."}
+
+  Product:
+    label: Produit
+    table: product
+    id_prefix: PRD
+    owner: "Direction des achats — Référentiel produit"
+    definition: "Article référencé au catalogue ERP pouvant être commandé."
+    synonyms: [produit, article, référence, SKU, item, product]
+    ambiguities:
+      - service: Marketing
+        meaning: "'Produit' = gamme commerciale regroupant plusieurs articles."
+        resolution: "La gamme est représentée par l'attribut category."
+    identity:
+      anchor: {system: erp, entity: ERP_PRODUCT}
+    source_mappings:
+      - {system: erp, entity: ERP_PRODUCT, key: ITEM_NO, authority_for: [sku, name, category, list_price_eur, std_cost_eur, active]}
+      - {system: wms, entity: wms_stock, key: sku, note: "Le WMS référence le produit par le SKU ERP."}
+      - {system: srm, entity: srm_suppliers.supplies, key: item_no, note: "Le SRM référence le produit par le SKU ERP."}
+    properties:
+      sku: {type: string, required: true, sensitivity: public, definition: "Référence article ERP (ITEM_NO)."}
+      name: {type: string, required: true, sensitivity: public, definition: "Libellé."}
+      category: {type: enum, values: [ELECTRONIQUE, MOBILIER, CONSOMMABLE, OUTILLAGE], required: true, sensitivity: public, definition: "Famille de produits."}
+      list_price_eur: {type: decimal, required: true, min: 0, sensitivity: public, definition: "Prix catalogue HT en EUR."}
+      std_cost_eur: {type: decimal, required: false, min: 0, sensitivity: confidential, definition: "Coût standard courant en EUR (le coût figé sur la ligne prévaut pour la marge)."}
+      active: {type: boolean, required: true, sensitivity: public, definition: "Un produit inactif ne peut pas être confirmé dans une commande."}
+
+  Warehouse:
+    label: Entrepôt
+    table: warehouse
+    id_prefix: WHS
+    owner: "Direction logistique"
+    definition: "Site physique qui stocke les Produits, prépare et expédie les Commandes."
+    synonyms: [entrepôt, dépôt, site logistique, plateforme, warehouse]
+    ambiguities:
+      - service: Commercial
+        meaning: "'Dépôt' désigne parfois un point relais client."
+        resolution: "Les points relais ne sont pas des Entrepôts."
+    identity:
+      anchor: {system: wms, entity: wms_warehouses}
+    source_mappings:
+      - {system: wms, entity: wms_warehouses, key: wh_code, authority_for: [code, name, city, region, active, capacity]}
+    properties:
+      code: {type: string, required: true, sensitivity: public, definition: "Code site WMS."}
+      name: {type: string, required: true, sensitivity: public, definition: "Nom du site."}
+      city: {type: string, required: true, sensitivity: public, definition: "Ville."}
+      region: {type: enum, values: [IDF, ARA, OCC, HDF], required: true, sensitivity: public, definition: "Région d'implantation."}
+      active: {type: boolean, required: true, sensitivity: public, definition: "Un entrepôt inactif ne peut pas recevoir d'affectation."}
+      capacity: {type: integer, required: false, min: 0, sensitivity: internal, definition: "Capacité nominale (unités)."}
+
+  Supplier:
+    label: Fournisseur
+    table: supplier
+    id_prefix: SUP
+    owner: "Direction des achats"
+    definition: "Organisation qui approvisionne un ou plusieurs Produits."
+    synonyms: [fournisseur, vendor, supplier, prestataire]
+    ambiguities:
+      - service: Logistique
+        meaning: "Le transporteur est parfois appelé 'fournisseur'."
+        resolution: "Les transporteurs ne sont pas des Fournisseurs en v1."
+    identity:
+      anchor: {system: srm, entity: srm_suppliers}
+    source_mappings:
+      - {system: srm, entity: srm_suppliers, key: supplier_ref, authority_for: [name, country, contact_email]}
+    properties:
+      name: {type: string, required: true, sensitivity: public, definition: "Raison sociale."}
+      country: {type: string, required: true, pattern: "^[A-Z]{2}$", sensitivity: public, definition: "Pays ISO 3166-1 alpha-2."}
+      contact_email: {type: string, required: false, sensitivity: pii, definition: "Email de l'interlocuteur (donnée personnelle)."}
+
+# -----------------------------------------------------------------------------
+# Relations (object properties). Cardinalités exprimées côté sujet (min..max vers l'objet)
+# et côté objet (inverse_min..inverse_max sujets par objet).
+# `projection` indique comment la relation est projetée dans les tables relationnelles.
+# -----------------------------------------------------------------------------
+relations:
+  placedBy:
+    label: "passée par"
+    domain: Order
+    range: Customer
+    min: 1
+    max: 1
+    inverse_label: "passe"
+    inverse_min: 0
+    inverse_max: null
+    definition: "Le Client donneur d'ordre de la Commande."
+    projection: {table: sales_order, column: customer_id, side: subject}
+  hasLine:
+    label: "contient la ligne"
+    domain: Order
+    range: OrderLine
+    min: 0
+    max: null
+    inverse_min: 1
+    inverse_max: 1
+    definition: "Lignes composant la Commande. Toute ligne appartient à exactement une commande."
+    projection: {table: order_line, column: order_id, side: object}
+  refersToProduct:
+    label: "porte sur"
+    domain: OrderLine
+    range: Product
+    min: 1
+    max: 1
+    inverse_min: 0
+    inverse_max: null
+    definition: "Le Produit commandé sur la ligne."
+    projection: {table: order_line, column: product_id, side: subject}
+  fulfilledFrom:
+    label: "préparée et expédiée par"
+    domain: Order
+    range: Warehouse
+    min: 0
+    max: 1
+    inverse_min: 0
+    inverse_max: null
+    definition: "Entrepôt affecté à la préparation et à l'expédition. Obligatoire à partir de in_preparation."
+    projection: {table: sales_order, column: warehouse_id, side: subject}
+  suppliedBy:
+    label: "fourni par"
+    domain: Product
+    range: Supplier
+    min: 0
+    max: null
+    inverse_min: 0
+    inverse_max: null
+    definition: "Fournisseur référencé pour le Produit."
+    qualifiers:
+      lead_time_days: {type: integer, definition: "Délai d'approvisionnement contractuel (jours)."}
+      is_primary: {type: boolean, definition: "Fournisseur principal du produit."}
+    projection: {table: product_supplier, link: true, subject_column: product_id, object_column: supplier_id}
+
+# -----------------------------------------------------------------------------
+# Relations inférées : jamais saisies ni importées. Produites par des règles déterministes
+# (okp/ingestion/inference.py), stockées avec method=inference, rule_id et derived_from.
+# -----------------------------------------------------------------------------
+inferred_relations:
+  purchased:
+    label: "a acheté"
+    domain: Customer
+    range: Product
+    rule_id: R-PURCHASE
+    rule: "Client C a acheté Produit P s'il existe une Commande non brouillon et non annulée placedBy C contenant une ligne refersToProduct P."
+  dependsOnSupplier:
+    label: "dépend du fournisseur"
+    domain: Order
+    range: Supplier
+    rule_id: R-SUPPLY-DEP
+    rule: "Commande O dépend du Fournisseur S si une ligne de O porte sur un Produit suppliedBy S."
+  possibleCrmMatch:
+    label: "correspondance CRM possible"
+    domain: Customer
+    range: literal
+    rule_id: ID-NAME-COUNTRY
+    rule: "Contact CRM de même raison sociale et pays mais d'email différent : candidat de rapprochement à valider par un humain (validation_status=pending_review)."
+
+# -----------------------------------------------------------------------------
+# Contraintes de validité. `enforced_in` indique où chaque contrainte est réellement vérifiée.
+# Un raisonneur OWL (monde ouvert) ne vérifie AUCUNE de ces contraintes : ce sont des
+# contrôles en monde fermé (SHACL, SQL, code d'ingestion, préconditions d'action).
+# -----------------------------------------------------------------------------
+constraints:
+  - id: C-ORD-CUSTOMER
+    description: "Toute Commande a exactement un Client."
+    enforced_in: [shacl, ingestion]
+  - id: C-LINE-ORDER
+    description: "Toute LigneCommande appartient à exactement une Commande et porte sur exactement un Produit."
+    enforced_in: [shacl, ingestion]
+  - id: C-ORD-HAS-LINES
+    description: "Une Commande hors brouillon et hors annulation a au moins une ligne."
+    enforced_in: [shacl, action_precondition]
+    severity: violation
+    sparql: |
+      SELECT $this WHERE {
+        $this okp:order.status ?s .
+        FILTER (STR(?s) NOT IN ("draft", "cancelled"))
+        FILTER NOT EXISTS { $this okp:hasLine ?l }
+      }
+  - id: C-ORD-WAREHOUSE
+    description: "Une Commande en préparation, expédiée ou livrée a un Entrepôt affecté."
+    enforced_in: [shacl, action_precondition]
+    severity: violation
+    sparql: |
+      SELECT $this WHERE {
+        $this okp:order.status ?s .
+        FILTER (STR(?s) IN ("in_preparation", "shipped", "delivered"))
+        FILTER NOT EXISTS { $this okp:fulfilledFrom ?w }
+      }
+  - id: C-ORD-SHIP-DATES
+    description: "Une Commande expédiée ou livrée a shipped_at postérieur ou égal à confirmed_at."
+    enforced_in: [shacl]
+    severity: violation
+    sparql: |
+      SELECT $this WHERE {
+        $this okp:order.status ?s .
+        FILTER (STR(?s) IN ("shipped", "delivered"))
+        OPTIONAL { $this okp:order.shipped_at ?sh }
+        OPTIONAL { $this okp:order.confirmed_at ?c }
+        FILTER (!BOUND(?sh) || !BOUND(?c) || ?sh < ?c)
+      }
+  - id: C-ORD-CANCEL-REASON
+    description: "Une Commande annulée porte un motif d'annulation."
+    enforced_in: [shacl, action_input]
+    severity: warning
+    sparql: |
+      SELECT $this WHERE {
+        $this okp:order.status ?s .
+        FILTER (STR(?s) = "cancelled")
+        FILTER NOT EXISTS { $this okp:order.cancel_reason ?r }
+      }
+  - id: C-LINE-RETURNS
+    description: "La quantité retournée d'une ligne ne dépasse pas la quantité commandée."
+    enforced_in: [shacl, ingestion]
+    severity: violation
+    target: OrderLine
+    sparql: |
+      SELECT $this WHERE {
+        $this okp:orderline.quantity ?q ; okp:orderline.returned_quantity ?r .
+        FILTER (?r > ?q)
+      }
+  - id: C-CUSTOMER-EMAIL-UNIQUE
+    description: "Deux Clients distincts ne partagent pas le même email normalisé."
+    enforced_in: [sql_unique_index, identity_resolution]

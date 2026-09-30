@@ -1,0 +1,267 @@
+# =============================================================================
+# Modèle sémantique analytique partagé (dashboards, applications, agents)
+# -----------------------------------------------------------------------------
+# - Les identifiants (customer_id, product_id, ...) sont les identifiants CANONIQUES du
+#   glossaire : ce sont les mêmes que dans le knowledge graph et la couche opérationnelle.
+# - Les expressions SQL ci-dessous sont du code versionné et revu. Les requêtes des
+#   consommateurs ne fournissent que des NOMS (métrique, dimension, attribut) validés contre
+#   ce fichier et des VALEURS passées en paramètres liés : aucun SQL libre n'est accepté.
+# =============================================================================
+version: 1.0.0
+reporting_currency: EUR
+timezone: Europe/Paris
+
+conventions:
+  taxes: "Tous les montants sont hors taxes (HT). La TVA (tax_rate) n'entre dans aucune métrique de chiffre d'affaires ni de marge."
+  discounts: "Les remises de ligne (discount_pct) sont déduites : montant net = quantité × prix unitaire × (1 − remise)."
+  returns: "Les quantités retournées (returned_quantity) sont déduites des quantités et montants nets de la période de la commande (pas de la période du retour — simplification v1)."
+  cancelled: "Les commandes au statut draft ou cancelled sont exclues des métriques de ventes. Une commande annulée après confirmation compte dans le taux d'annulation."
+  currency: "Conversion en EUR au taux ERP_FX_RATE du jour de commande (date locale) ou, à défaut, du dernier taux connu dans les 7 jours précédents. Sans taux : la ligne est EXCLUE et signalée dans les avertissements (jamais convertie à 1)."
+  timezone: "Les horodatages sont stockés en UTC. Les dimensions temporelles utilisent la date locale Europe/Paris (order_date_local)."
+  missing_values: "Une valeur manquante n'est jamais remplacée par 0. Coût absent → ligne exclue de la marge (et du dénominateur du taux de marge) ; taux de change absent → ligne exclue ; chaque exclusion est comptée et renvoyée."
+
+dimensions:
+  customer:
+    label: Client
+    concept: Customer
+    table: v_dim_customer
+    key: customer_id
+    attributes:
+      customer_id: {label: "Identifiant client canonique"}
+      name: {label: "Nom du client", sensitivity: internal}
+      segment: {label: "Segment"}
+      region: {label: "Région commerciale"}
+      country: {label: "Pays"}
+  product:
+    label: Produit
+    concept: Product
+    table: v_dim_product
+    key: product_id
+    attributes:
+      product_id: {label: "Identifiant produit canonique"}
+      sku: {label: "Référence"}
+      name: {label: "Libellé"}
+      category: {label: "Famille"}
+  warehouse:
+    label: Entrepôt
+    concept: Warehouse
+    table: v_dim_warehouse
+    key: warehouse_id
+    attributes:
+      warehouse_id: {label: "Identifiant entrepôt canonique"}
+      code: {label: "Code site"}
+      name: {label: "Nom"}
+      region: {label: "Région d'implantation"}
+  status:
+    label: Statut de commande
+    degenerate: true
+    column: order_status
+    values: [draft, confirmed, in_preparation, shipped, delivered, cancelled]
+  time:
+    label: Temps (Europe/Paris)
+    degenerate: true
+    grains:
+      day: "{col}"
+      month: "substr({col}, 1, 7)"
+      year: "substr({col}, 1, 4)"
+
+facts:
+  order_line:
+    label: Lignes de commande
+    view: v_fact_order_line
+    sources: [erp]
+    grain: "Une ligne par ligne de commande (order_id, line_no) — non supprimée."
+    grain_keys: [order_id, line_no]
+    time_column: order_date_local
+    joins:
+      customer: {column: customer_id, cardinality: many_to_one}
+      product: {column: product_id, cardinality: many_to_one}
+      warehouse: {column: warehouse_id, cardinality: many_to_one, optional: true}
+    degenerate: [status, time]
+  order:
+    label: Commandes
+    view: v_fact_order
+    sources: [erp]
+    grain: "Une ligne par commande (order_id) — non supprimée. Les montants sont pré-agrégés depuis les lignes."
+    grain_keys: [order_id]
+    time_column: order_date_local
+    joins:
+      customer: {column: customer_id, cardinality: many_to_one}
+      warehouse: {column: warehouse_id, cardinality: many_to_one, optional: true}
+    # Pas de jointure vers product : une commande contient plusieurs produits (fan-out).
+    degenerate: [status, time]
+  inventory:
+    label: Stock (instantanés)
+    view: v_fact_inventory
+    sources: [wms, erp]
+    grain: "Une ligne par (snapshot_date, warehouse_id, product_id)."
+    grain_keys: [snapshot_date, warehouse_id, product_id]
+    time_column: snapshot_date
+    joins:
+      product: {column: product_id, cardinality: many_to_one}
+      warehouse: {column: warehouse_id, cardinality: many_to_one}
+    degenerate: [time]
+
+metrics:
+  order_count:
+    label: Nombre de commandes
+    synonyms: [nombre de commandes, nb commandes, volume de commandes, commandes, ventes]
+    owner: "Direction commerciale"
+    description: "Nombre de commandes distinctes hors brouillon et hors annulées."
+    fact: order
+    type: count_distinct
+    expression: order_id
+    filters: ["order_status NOT IN ('draft', 'cancelled')"]
+    unit: commandes
+    additivity: additive
+    additivity_note: "Additive sur client, entrepôt, statut et temps (chaque commande appartient à un seul membre). Non disponible par produit (fan-out)."
+    sensitivity: internal
+    rules:
+      taxes: "Sans objet."
+      cancelled: "Exclues (draft, cancelled)."
+      returns: "Une commande intégralement retournée reste comptée."
+      missing_values: "Sans objet."
+  quantity_sold:
+    label: Quantité vendue
+    synonyms: [quantité vendue, volume vendu, unités vendues, ventes]
+    owner: "Direction commerciale"
+    description: "Somme des quantités commandées moins les quantités retournées, hors brouillons et annulées."
+    fact: order_line
+    type: sum
+    expression: net_quantity
+    filters: ["order_status NOT IN ('draft', 'cancelled')"]
+    unit: unités
+    additivity: additive
+    sensitivity: internal
+    rules:
+      returns: "Déduites (quantity − returned_quantity)."
+      cancelled: "Exclues."
+      missing_values: "Sans objet (quantité obligatoire)."
+  revenue:
+    label: Chiffre d'affaires net
+    synonyms: [chiffre d'affaires, CA, CA net, revenu, revenue, ventes, montant des ventes]
+    owner: "Direction financière"
+    description: "Somme HT des montants nets de remise et de retours, convertis en EUR, hors brouillons et annulées."
+    fact: order_line
+    type: sum
+    expression: net_revenue_eur
+    filters: ["order_status NOT IN ('draft', 'cancelled')", "has_fx = 1"]
+    quality_checks:
+      - {id: missing_fx, message: "ligne(s) exclue(s) faute de taux de change", count_filter: "order_status NOT IN ('draft', 'cancelled') AND has_fx = 0"}
+    unit: EUR
+    additivity: additive
+    sensitivity: internal
+    rules:
+      taxes: "HT : TVA exclue."
+      discounts: "Déduites."
+      returns: "Déduits (quantité nette)."
+      cancelled: "Exclues."
+      currency: "Converti en EUR au taux du jour de commande (repli 7 jours)."
+      timezone: "Rattaché à la date locale Europe/Paris de la commande."
+      missing_values: "Ligne sans taux de change exclue et comptée dans les avertissements."
+  gross_margin:
+    label: Marge brute
+    synonyms: [marge, marge brute, margin]
+    owner: "Direction financière"
+    description: "Chiffre d'affaires net moins coût de revient des quantités nettes (coût figé à la commande), sur les lignes dont le coût est connu."
+    fact: order_line
+    type: sum
+    expression: "net_revenue_eur - cogs_eur"
+    filters: ["order_status NOT IN ('draft', 'cancelled')", "has_fx = 1", "has_cost = 1"]
+    quality_checks:
+      - {id: missing_fx, message: "ligne(s) exclue(s) faute de taux de change", count_filter: "order_status NOT IN ('draft', 'cancelled') AND has_fx = 0"}
+      - {id: missing_cost, message: "ligne(s) exclue(s) faute de coût de revient", count_filter: "order_status NOT IN ('draft', 'cancelled') AND has_fx = 1 AND has_cost = 0"}
+    unit: EUR
+    additivity: additive
+    sensitivity: confidential
+    rules:
+      taxes: "HT."
+      discounts: "Déduites du CA."
+      returns: "CA et coût calculés sur la quantité nette (le produit retourné est supposé remis en stock)."
+      cancelled: "Exclues."
+      currency: "CA converti en EUR ; coût déjà en EUR."
+      missing_values: "Ligne sans coût exclue (CA ET coût) et comptée."
+  gross_margin_rate:
+    label: Taux de marge
+    synonyms: [taux de marge, marge en pourcentage, margin rate, taux de marge brute]
+    owner: "Direction financière"
+    description: "Marge brute / chiffre d'affaires net, calculés sur le même périmètre (lignes avec coût et taux de change)."
+    fact: order_line
+    type: ratio
+    numerator: "SUM(net_revenue_eur - cogs_eur)"
+    denominator: "SUM(net_revenue_eur)"
+    filters: ["order_status NOT IN ('draft', 'cancelled')", "has_fx = 1", "has_cost = 1"]
+    quality_checks:
+      - {id: missing_cost, message: "ligne(s) exclue(s) faute de coût de revient", count_filter: "order_status NOT IN ('draft', 'cancelled') AND has_fx = 1 AND has_cost = 0"}
+    unit: ratio
+    additivity: non_additive
+    additivity_note: "Rapport de sommes : ne jamais moyenner des taux ; recalculer à partir des sommes."
+    sensitivity: confidential
+    rules:
+      missing_values: "Dénominateur nul → valeur null (pas 0)."
+  average_order_value:
+    label: Panier moyen
+    synonyms: [panier moyen, valeur moyenne de commande, AOV, average order value]
+    owner: "Direction commerciale"
+    description: "Chiffre d'affaires net / nombre de commandes, sur les commandes dont toutes les lignes ont un taux de change."
+    fact: order
+    type: ratio
+    numerator: "SUM(net_revenue_eur)"
+    denominator: "COUNT(DISTINCT order_id)"
+    filters: ["order_status NOT IN ('draft', 'cancelled')", "has_fx = 1"]
+    quality_checks:
+      - {id: missing_fx, message: "commande(s) exclue(s) faute de taux de change", count_filter: "order_status NOT IN ('draft', 'cancelled') AND has_fx = 0"}
+    unit: EUR
+    additivity: non_additive
+    sensitivity: internal
+    rules:
+      taxes: "HT."
+      returns: "Déduits."
+      cancelled: "Exclues du numérateur et du dénominateur."
+      missing_values: "Commande sans taux exclue des deux termes."
+  processing_time_hours:
+    label: Délai de traitement
+    synonyms: [délai de traitement, délai de préparation, lead time, temps de traitement]
+    owner: "Direction logistique"
+    description: "Durée moyenne en heures entre confirmation et expédition, pour les commandes expédiées ou livrées."
+    fact: order
+    type: ratio
+    numerator: "SUM(processing_hours)"
+    denominator: "COUNT(processing_hours)"
+    filters: ["order_status IN ('shipped', 'delivered')", "processing_hours IS NOT NULL"]
+    unit: heures
+    additivity: non_additive
+    sensitivity: internal
+    rules:
+      timezone: "Calculé sur horodatages UTC (insensible aux changements d'heure)."
+      missing_values: "Commandes sans date de confirmation ou d'expédition exclues."
+  cancellation_rate:
+    label: Taux d'annulation
+    synonyms: [taux d'annulation, annulations, cancellation rate]
+    owner: "Direction commerciale"
+    description: "Commandes annulées après confirmation / commandes ayant été confirmées."
+    fact: order
+    type: ratio
+    numerator: "SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END)"
+    denominator: "COUNT(DISTINCT order_id)"
+    filters: ["ever_confirmed = 1"]
+    unit: ratio
+    additivity: non_additive
+    sensitivity: internal
+    rules:
+      cancelled: "Les brouillons annulés (jamais confirmés) sont exclus du numérateur et du dénominateur."
+  stock_on_hand:
+    label: Stock disponible
+    synonyms: [stock, stock disponible, inventaire, on hand]
+    owner: "Direction logistique"
+    description: "Unités en stock au dernier instantané de la période (par groupe temporel s'il est demandé)."
+    fact: inventory
+    type: last_snapshot_sum
+    expression: on_hand
+    filters: []
+    unit: unités
+    additivity: semi_additive
+    additivity_note: "Additif entre entrepôts et produits ; NON additif dans le temps (dernière valeur de la période)."
+    sensitivity: internal
+    rules:
+      missing_values: "Un couple entrepôt/produit absent du dernier instantané n'est pas compté."

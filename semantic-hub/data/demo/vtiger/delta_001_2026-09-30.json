@@ -1,0 +1,65 @@
+{
+ "_comment": "Delta FICTIF au format de l'opération vTiger 'sync' (updated/deleted).",
+ "extracted_at": "2026-09-30 12:00:00",
+ "currency_map": {
+  "21x1": "EUR",
+  "21x2": "USD",
+  "21x3": "GBP"
+ },
+ "updated": {
+  "SalesOrder": [
+   {
+    "id": "6x102",
+    "salesorder_no": "SO102",
+    "subject": "Commande 102",
+    "account_id": "11x1",
+    "contact_id": "12x1",
+    "sostatus": "Approved",
+    "createdtime": "2026-07-15 13:40:00",
+    "modifiedtime": "2026-09-30 10:00:00",
+    "currency_id": "21x1",
+    "cf_date_confirmation": "2026-07-15 14:00:00",
+    "LineItems": [
+     {
+      "lineitem_id": "1003",
+      "productid": "14x2",
+      "quantity": "6.000",
+      "listprice": "45.00",
+      "discount_percent": "0.00",
+      "discount_amount": "0.00",
+      "tax1": "5.500",
+      "sequence_no": "1"
+     },
+     {
+      "lineitem_id": "1004",
+      "productid": "14x5",
+      "quantity": "2.000",
+      "listprice": "40.00",
+      "discount_percent": "0.00",
+      "discount_amount": "5.00",
+      "tax1": "20.000",
+      "sequence_no": "2"
+     }
+    ]
+   }
+  ],
+  "Products": [
+   {
+    "id": "14x1",
+    "product_no": "PRO1",
+    "productname": "Farine T65 25kg",
+    "productcategory": "Farines",
+    "unit_price": "32.00",
+    "purchase_cost": "22.00",
+    "vendor_id": "2x1",
+    "discontinued": "1",
+    "modifiedtime": "2026-09-30 09:00:00"
+   }
+  ]
+ },
+ "deleted": {
+  "Contacts": [
+   "12x4"
+  ]
+ }
+}

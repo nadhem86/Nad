@@ -1,0 +1,567 @@
+{
+ "_comment": "Données FICTIVES au format du webservice vTiger 7 (query/retrieve). Champs cf_* = champs personnalisés supposés (H).",
+ "extracted_at": "2026-09-30 06:00:00",
+ "currency_map": {
+  "21x1": "EUR",
+  "21x2": "USD",
+  "21x3": "GBP"
+ },
+ "Accounts": [
+  {
+   "id": "11x1",
+   "account_no": "ACC1",
+   "accountname": "Boulangerie Martin",
+   "cf_region": "Nord",
+   "industry": "Alimentation",
+   "email1": "contact@boulangerie-martin.example",
+   "phone": "03 20 11 22 33",
+   "createdtime": "2025-11-02 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "11x2",
+   "account_no": "ACC2",
+   "accountname": "Martin & Fils Distribution",
+   "cf_region": "Sud",
+   "industry": "Distribution",
+   "email1": "achats@martinfils.example",
+   "phone": "04 91 00 11 22",
+   "createdtime": "2025-11-02 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "11x3",
+   "account_no": "ACC3",
+   "accountname": "Café du Port",
+   "cf_region": "Sud",
+   "industry": "Restauration",
+   "email1": "bonjour@cafeduport.example",
+   "phone": "04 91 22 33 44",
+   "createdtime": "2025-11-02 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "11x4",
+   "account_no": "ACC4",
+   "accountname": "Hôtel Lumière",
+   "cf_region": "IDF",
+   "industry": "Hôtellerie",
+   "email1": "eco@hotel-lumiere.example",
+   "phone": "01 40 00 00 01",
+   "createdtime": "2025-11-02 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "11x5",
+   "account_no": "ACC5",
+   "accountname": "Épicerie Fine Dupont",
+   "cf_region": "Nord",
+   "industry": "Alimentation",
+   "email1": "dupont@epicerie.example",
+   "phone": "03 20 55 66 77",
+   "createdtime": "2025-11-02 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  }
+ ],
+ "Contacts": [
+  {
+   "id": "12x1",
+   "contact_no": "CON1",
+   "firstname": "Jeanne",
+   "lastname": "Martin",
+   "account_id": "11x1",
+   "mobile": "06 12 34 56 78",
+   "phone": "",
+   "email": "jeanne@boulangerie-martin.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "12x2",
+   "contact_no": "CON2",
+   "firstname": "Paul",
+   "lastname": "Martin",
+   "account_id": "11x2",
+   "mobile": "+33 6 98 76 54 32",
+   "phone": "",
+   "email": "paul@martinfils.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "12x3",
+   "contact_no": "CON3",
+   "firstname": "Sofia",
+   "lastname": "Rossi",
+   "account_id": "11x3",
+   "mobile": "0033611223344",
+   "phone": "",
+   "email": "sofia@cafeduport.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "12x4",
+   "contact_no": "CON4",
+   "firstname": "Karim",
+   "lastname": "Benali",
+   "account_id": "11x4",
+   "mobile": "06 55 44 33 22",
+   "phone": "",
+   "email": "karim@hotel-lumiere.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "12x5",
+   "contact_no": "CON5",
+   "firstname": "Luc",
+   "lastname": "Dupont",
+   "account_id": "11x5",
+   "mobile": "06 77 88 99 00",
+   "phone": "",
+   "email": "luc@epicerie.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  },
+  {
+   "id": "12x6",
+   "contact_no": "CON6",
+   "firstname": "Marie",
+   "lastname": "Dupont",
+   "account_id": "11x5",
+   "mobile": "06 77 88 99 00",
+   "phone": "",
+   "email": "marie@epicerie.example",
+   "createdtime": "2025-11-03 10:00:00",
+   "modifiedtime": "2026-01-10 09:00:00"
+  }
+ ],
+ "Vendors": [
+  {
+   "id": "2x1",
+   "vendor_no": "VEN1",
+   "vendorname": "Moulins de France",
+   "country": "France",
+   "email": "pro@moulins.example",
+   "modifiedtime": "2026-01-05 08:00:00"
+  },
+  {
+   "id": "2x2",
+   "vendor_no": "VEN2",
+   "vendorname": "Café Import SARL",
+   "country": "France",
+   "email": "sales@cafeimport.example",
+   "modifiedtime": "2026-01-05 08:00:00"
+  },
+  {
+   "id": "2x3",
+   "vendor_no": "VEN3",
+   "vendorname": "EcoPack Europe",
+   "country": "Belgique",
+   "email": "orders@ecopack.example",
+   "modifiedtime": "2026-01-05 08:00:00"
+  }
+ ],
+ "Products": [
+  {
+   "id": "14x1",
+   "product_no": "PRO1",
+   "productname": "Farine T65 25kg",
+   "productcategory": "Farines",
+   "unit_price": "32.00",
+   "purchase_cost": "21.00",
+   "vendor_id": "2x1",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x2",
+   "product_no": "PRO2",
+   "productname": "Farine bio T80 25kg",
+   "productcategory": "Farines",
+   "unit_price": "45.00",
+   "purchase_cost": "30.00",
+   "vendor_id": "2x1",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x3",
+   "product_no": "PRO3",
+   "productname": "Café grains Arabica 1kg",
+   "productcategory": "Cafés",
+   "unit_price": "24.00",
+   "purchase_cost": "14.00",
+   "vendor_id": "2x2",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x4",
+   "product_no": "PRO4",
+   "productname": "Café moulu Robusta 1kg",
+   "productcategory": "Cafés",
+   "unit_price": "18.00",
+   "purchase_cost": "10.50",
+   "vendor_id": "2x2",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x5",
+   "product_no": "PRO5",
+   "productname": "Sachets kraft x1000",
+   "productcategory": "Emballages",
+   "unit_price": "40.00",
+   "purchase_cost": "22.00",
+   "vendor_id": "2x3",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x6",
+   "product_no": "PRO6",
+   "productname": "Gobelets carton x500",
+   "productcategory": "Emballages",
+   "unit_price": "35.00",
+   "purchase_cost": "",
+   "vendor_id": "2x3",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  },
+  {
+   "id": "14x7",
+   "product_no": "PRO7",
+   "productname": "Levure fraîche 500g",
+   "productcategory": "Ingrédients",
+   "unit_price": "4.50",
+   "purchase_cost": "2.20",
+   "vendor_id": "2x1",
+   "discontinued": "1",
+   "modifiedtime": "2026-01-15 08:00:00"
+  }
+ ],
+ "ProductVendorLinks": [
+  {
+   "productid": "14x5",
+   "vendorid": "2x3"
+  },
+  {
+   "productid": "14x5",
+   "vendorid": "2x1"
+  }
+ ],
+ "SalesOrder": [
+  {
+   "id": "6x101",
+   "salesorder_no": "SO101",
+   "subject": "Commande 101",
+   "account_id": "11x1",
+   "contact_id": "12x1",
+   "sostatus": "Delivered",
+   "createdtime": "2026-07-03 08:15:00",
+   "modifiedtime": "2026-07-06 10:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-07-03 09:00:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1001",
+     "productid": "14x1",
+     "quantity": "10.000",
+     "listprice": "32.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1002",
+     "productid": "14x7",
+     "quantity": "20.000",
+     "listprice": "4.50",
+     "discount_percent": "10.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x102",
+   "salesorder_no": "SO102",
+   "subject": "Commande 102",
+   "account_id": "11x1",
+   "contact_id": "12x1",
+   "sostatus": "Approved",
+   "createdtime": "2026-07-15 13:40:00",
+   "modifiedtime": "2026-07-15 13:40:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-07-15 14:00:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1003",
+     "productid": "14x2",
+     "quantity": "5.000",
+     "listprice": "45.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1004",
+     "productid": "14x5",
+     "quantity": "2.000",
+     "listprice": "40.00",
+     "discount_percent": "0.00",
+     "discount_amount": "5.00",
+     "tax1": "20.000",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x103",
+   "salesorder_no": "SO103",
+   "subject": "Commande 103",
+   "account_id": "11x3",
+   "contact_id": "12x3",
+   "sostatus": "Approved",
+   "createdtime": "2026-06-30 22:30:00",
+   "modifiedtime": "2026-06-30 22:30:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-07-01 07:00:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1005",
+     "productid": "14x3",
+     "quantity": "30.000",
+     "listprice": "24.00",
+     "discount_percent": "5.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1006",
+     "productid": "14x6",
+     "quantity": "10.000",
+     "listprice": "35.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "20.000",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x104",
+   "salesorder_no": "SO104",
+   "subject": "Commande 104",
+   "account_id": "11x4",
+   "contact_id": "12x4",
+   "sostatus": "Delivered",
+   "createdtime": "2026-08-02 10:00:00",
+   "modifiedtime": "2026-08-06 16:00:00",
+   "currency_id": "21x2",
+   "cf_date_confirmation": "2026-08-02 11:00:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1007",
+     "productid": "14x3",
+     "quantity": "50.000",
+     "listprice": "26.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1008",
+     "productid": "14x4",
+     "quantity": "40.000",
+     "listprice": "20.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x105",
+   "salesorder_no": "SO105",
+   "subject": "Commande 105",
+   "account_id": "11x2",
+   "contact_id": "12x2",
+   "sostatus": "Cancelled",
+   "createdtime": "2026-08-10 09:00:00",
+   "modifiedtime": "2026-08-11 08:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-08-10 09:30:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1009",
+     "productid": "14x5",
+     "quantity": "10.000",
+     "listprice": "40.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "20.000",
+     "sequence_no": "1"
+    }
+   ]
+  },
+  {
+   "id": "6x106",
+   "salesorder_no": "SO106",
+   "subject": "Commande 106",
+   "account_id": "11x5",
+   "contact_id": "12x5",
+   "sostatus": "Created",
+   "createdtime": "2026-09-01 16:00:00",
+   "modifiedtime": "2026-09-01 16:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "",
+   "LineItems": [
+    {
+     "lineitem_id": "1010",
+     "productid": "14x1",
+     "quantity": "4.000",
+     "listprice": "32.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1011",
+     "productid": "14x7",
+     "quantity": "10.000",
+     "listprice": "4.50",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x107",
+   "salesorder_no": "SO107",
+   "subject": "Commande 107",
+   "account_id": "11x5",
+   "contact_id": "12x6",
+   "sostatus": "Approved",
+   "createdtime": "2026-09-05 08:00:00",
+   "modifiedtime": "2026-09-05 08:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-09-05 08:30:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1012",
+     "productid": "14x2",
+     "quantity": "3.000",
+     "listprice": "45.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1013",
+     "productid": "14x5",
+     "quantity": "1.000",
+     "listprice": "40.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "20.000",
+     "sequence_no": "2"
+    }
+   ]
+  },
+  {
+   "id": "6x108",
+   "salesorder_no": "SO108",
+   "subject": "Commande 108",
+   "account_id": "11x3",
+   "contact_id": "12x3",
+   "sostatus": "Cancelled",
+   "createdtime": "2026-09-12 12:00:00",
+   "modifiedtime": "2026-09-13 09:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "",
+   "LineItems": [
+    {
+     "lineitem_id": "1014",
+     "productid": "14x4",
+     "quantity": "5.000",
+     "listprice": "18.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    }
+   ]
+  },
+  {
+   "id": "6x109",
+   "salesorder_no": "SO109",
+   "subject": "Commande 109",
+   "account_id": "11x4",
+   "contact_id": "12x4",
+   "sostatus": "Approved",
+   "createdtime": "2026-09-20 09:00:00",
+   "modifiedtime": "2026-09-20 09:00:00",
+   "currency_id": "21x3",
+   "cf_date_confirmation": "2026-09-20 09:10:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1015",
+     "productid": "14x3",
+     "quantity": "10.000",
+     "listprice": "21.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    }
+   ]
+  },
+  {
+   "id": "6x110",
+   "salesorder_no": "SO110",
+   "subject": "Commande 110",
+   "account_id": "11x1",
+   "contact_id": "12x1",
+   "sostatus": "Approved",
+   "createdtime": "2026-09-25 10:00:00",
+   "modifiedtime": "2026-09-25 10:00:00",
+   "currency_id": "21x1",
+   "cf_date_confirmation": "2026-09-25 10:30:00",
+   "LineItems": [
+    {
+     "lineitem_id": "1016",
+     "productid": "14x1",
+     "quantity": "8.000",
+     "listprice": "30.00",
+     "discount_percent": "0.00",
+     "discount_amount": "0.00",
+     "tax1": "5.500",
+     "sequence_no": "1"
+    },
+    {
+     "lineitem_id": "1017",
+     "productid": "14x5",
+     "quantity": "3.000",
+     "listprice": "40.00",
+     "discount_percent": "10.00",
+     "discount_amount": "0.00",
+     "tax1": "20.000",
+     "sequence_no": "2"
+    }
+   ]
+  }
+ ]
+}

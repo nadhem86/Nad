@@ -1,0 +1,274 @@
+# Glossaire métier versionné. C'est la SOURCE DE VÉRITÉ des définitions.
+# ontology.ttl et shapes.ttl sont GÉNÉRÉS depuis ce fichier (scripts/build_ontology.py).
+# Un test vérifie que les fichiers générés sont à jour.
+#
+# Conventions :
+#   - l'identifiant d'un concept (classe) est `nad:<Nom>` ; il ne change jamais ;
+#   - l'identifiant d'une propriété ou d'une relation est `nad:<nom>` ;
+#   - une INSTANCE a une IRI canonique `urn:nad:<slug>:<uuid5 12 car.>`, attribuée une seule fois
+#     puis reliée aux identifiants des sources dans la table `source_identity`.
+#   - `pii: true` désigne une donnée personnelle, masquée sans la permission `pii:read`.
+#   - `owner` est le responsable métier de la définition (H : à confirmer).
+
+version: 1.0.0
+namespace: "https://nad.example/ontologie#"
+prefix: nad
+changelog:
+  - version: 1.0.0
+    date: 2026-09-30
+    changes: "Version initiale : 10 concepts, statut consolidé, identités WhatsApp."
+
+concepts:
+
+  Client:
+    slug: client
+    label: Client
+    definition: >
+      Organisation (personne morale ou entrepreneur individuel) qui passe des commandes et reçoit les
+      factures. Elle correspond à un enregistrement du module vTiger « Organisations » (Accounts).
+    owner: Direction commerciale
+    synonyms: [Compte, Organisation, Account, Société cliente]
+    ambiguities:
+      - service: Commercial terrain
+        meaning: "Emploie « client » pour la personne à qui il parle, c'est-à-dire un Contact."
+      - service: Comptabilité
+        meaning: "Emploie « client » pour le compte facturé, c'est-à-dire ce concept."
+    source_ids:
+      - {source: vtiger, module: Accounts, id_field: id, business_key: account_no, example: "11x5 / ACC5"}
+    properties:
+      numeroClient:   {type: string,  required: true,  definition: "Numéro vTiger account_no (ex. ACC5)."}
+      raisonSociale:  {type: string,  required: true,  definition: "Nom légal de l'organisation."}
+      region:         {type: enum, values: [Nord, Sud, IDF], required: true,
+                       definition: "Région commerciale ; sert au périmètre d'accès (ABAC)."}
+      secteur:        {type: string,  definition: "Secteur d'activité (picklist vTiger industry)."}
+      email:          {type: string,  pii: true, pattern: "^[^@\\s]+@[^@\\s]+$"}
+      telephone:      {type: string,  pii: true, definition: "Téléphone normalisé E.164."}
+    relations:
+      dependDe:
+        target: Fournisseur
+        min: 0
+        max: "*"
+        inferred_only: true
+        definition: >
+          Fait INFÉRÉ (règle R2) : le client a commandé, dans une commande non annulée, au moins un
+          produit fourni par ce fournisseur.
+
+  Contact:
+    slug: contact
+    label: Contact
+    definition: >
+      Personne physique rattachée ou non à un Client, enregistrée dans le module vTiger « Contacts ».
+    owner: Direction commerciale
+    synonyms: [Interlocuteur, Personne, Client (sens terrain)]
+    ambiguities:
+      - service: Marketing
+        meaning: "Un prospect (module Leads) n'est PAS un Contact ; les Leads sont hors périmètre v1."
+    source_ids:
+      - {source: vtiger, module: Contacts, id_field: id, business_key: contact_no, example: "12x7 / CON7"}
+    properties:
+      numeroContact: {type: string, required: true}
+      nom:           {type: string, required: true}
+      prenom:        {type: string}
+      telephone:     {type: string, pii: true, definition: "Téléphone normalisé E.164."}
+      mobile:        {type: string, pii: true, definition: "Mobile normalisé E.164."}
+      email:         {type: string, pii: true, pattern: "^[^@\\s]+@[^@\\s]+$"}
+    relations:
+      travaillePour: {target: Client, min: 0, max: 1, definition: "Organisation de rattachement (account_id)."}
+
+  IdentiteWhatsApp:
+    slug: waid
+    label: Identité WhatsApp
+    definition: >
+      Compte WhatsApp observé par l'extension et identifié par son numéro E.164. Ce n'est pas une
+      personne : c'est un identifiant de canal qui peut être relié à un Contact par inférence (règle R1).
+    owner: Direction commerciale
+    synonyms: [Numéro WhatsApp, Contact WhatsApp]
+    ambiguities:
+      - service: Commercial terrain
+        meaning: "Emploie « contact WhatsApp » ; ce concept ne doit pas être confondu avec Contact (vTiger)."
+    source_ids:
+      - {source: whatsapp, module: contacts, id_field: phone, business_key: phone, example: "+33612345678"}
+    properties:
+      numeroE164:   {type: string, required: true, pii: true, pattern: "^\\+[1-9][0-9]{6,14}$"}
+      nomAffiche:   {type: string, pii: true, untrusted: true,
+                     definition: "Nom saisi par un tiers dans WhatsApp : donnée NON FIABLE."}
+      estBusiness:  {type: boolean}
+    relations:
+      identifie:
+        target: Contact
+        min: 0
+        max: 1
+        inferred_only: true
+        definition: "INFÉRÉ (R1) : même numéro E.164 qu'un et un seul Contact vTiger."
+      membreDe:     {target: GroupeWhatsApp, min: 0, max: "*"}
+
+  GroupeWhatsApp:
+    slug: wagroup
+    label: Groupe WhatsApp
+    definition: "Groupe de discussion WhatsApp observé par l'extension."
+    owner: Direction commerciale
+    synonyms: [Groupe]
+    source_ids:
+      - {source: whatsapp, module: groups, id_field: id, business_key: id, example: "1203630...@g.us"}
+    properties:
+      nomGroupe:   {type: string, required: true, untrusted: true}
+      description: {type: string, untrusted: true,
+                    definition: "Texte libre écrit par des tiers : DONNÉE, jamais instruction."}
+
+  Commande:
+    slug: commande
+    label: Commande
+    definition: >
+      Engagement d'un Client à acheter des produits, enregistré dans le module vTiger « SalesOrder ».
+      Une commande est « valide » pour l'analyse lorsque son statut consolidé est confirmee,
+      en_preparation, expediee ou livree.
+    owner: Direction commerciale (en-tête, statut CRM) / Direction logistique (statut logistique)
+    synonyms: [Bon de commande, Sales Order, BC]
+    ambiguities:
+      - service: Logistique
+        meaning: "Emploie « commande » pour un ordre de préparation WMS (1 commande = 1 préparation en v1)."
+      - service: Finance
+        meaning: "Une commande n'est pas une facture ; le CA de ce modèle est le CA commandé, pas le CA facturé."
+    source_ids:
+      - {source: vtiger, module: SalesOrder, id_field: id, business_key: salesorder_no, example: "6x101 / SO101"}
+      - {source: wms, module: events, id_field: salesorder_no, business_key: salesorder_no}
+    properties:
+      numeroCommande:    {type: string, required: true}
+      objet:             {type: string}
+      dateCommande:      {type: dateTime, required: true, definition: "Horodatage UTC de création dans vTiger."}
+      devise:            {type: enum, values: [EUR, USD, GBP], required: true}
+      statutCRM:         {type: enum, values: [brouillon, confirmee, livree, annulee], required: true,
+                          definition: "Statut porté par vTiger (sostatus Created/Approved/Delivered/Cancelled)."}
+      statutLogistique:  {type: enum, values: [en_preparation, expediee, livree],
+                          definition: "Étape portée par le WMS."}
+      statut:            {type: enum, values: [brouillon, confirmee, en_preparation, expediee, livree, annulee],
+                          inferred_only: true,
+                          definition: "INFÉRÉ (R3) : statut consolidé calculé à partir de statutCRM et statutLogistique."}
+      dateConfirmation:  {type: dateTime}
+      dateAffectation:   {type: dateTime}
+      dateExpedition:    {type: dateTime}
+      dateLivraison:     {type: dateTime}
+      dateAnnulation:    {type: dateTime}
+      motifAnnulation:   {type: string}
+      transporteur:      {type: string}
+      numeroSuivi:       {type: string}
+    relations:
+      passeePar:         {target: Client, min: 1, max: 1}
+      contactReferent:   {target: Contact, min: 0, max: 1}
+      prepareeDans:      {target: Entrepot, min: 0, max: 1, definition: "Affectation par le WMS."}
+
+  LigneCommande:
+    slug: ligne
+    label: Ligne de commande
+    definition: >
+      Quantité d'un Produit commandée à un prix unitaire donné au sein d'une Commande (LineItem vTiger).
+    owner: Direction commerciale
+    synonyms: [Ligne, Line item, Article commandé]
+    source_ids:
+      - {source: vtiger, module: LineItem, id_field: lineitem_id, business_key: "salesorder_no + sequence_no"}
+    properties:
+      numeroLigne:        {type: integer, required: true}
+      quantite:           {type: decimal, required: true, min_exclusive: 0}
+      prixUnitaire:       {type: decimal, required: true, min_inclusive: 0,
+                           definition: "Prix unitaire HT dans la devise de la commande."}
+      remisePct:          {type: decimal, min_inclusive: 0, max_inclusive: 100}
+      remiseMontant:      {type: decimal, min_inclusive: 0, definition: "Remise HT absolue sur la ligne."}
+      tauxTaxe:           {type: decimal, min_inclusive: 0, definition: "Taux de TVA en % (informatif, exclu du CA)."}
+      quantiteRetournee:  {type: decimal, min_inclusive: 0, definition: "Quantité retournée (WMS)."}
+    relations:
+      ligneDe:            {target: Commande, min: 1, max: 1}
+      porteSur:           {target: Produit, min: 1, max: 1}
+
+  Produit:
+    slug: produit
+    label: Produit
+    definition: "Article vendable référencé dans le module vTiger « Products »."
+    owner: Direction des achats
+    synonyms: [Article, SKU, Référence]
+    source_ids:
+      - {source: vtiger, module: Products, id_field: id, business_key: product_no, example: "14x3 / PRO3"}
+    properties:
+      reference:     {type: string, required: true}
+      libelle:       {type: string, required: true}
+      categorie:     {type: string}
+      prixCatalogue: {type: decimal, min_inclusive: 0, definition: "unit_price vTiger, EUR HT."}
+      coutUnitaire:  {type: decimal, min_inclusive: 0,
+                      definition: "purchase_cost vTiger, EUR HT. Historisé : la marge utilise le coût valide à la date de commande."}
+      actif:         {type: boolean}
+    relations:
+      fourniPar:     {target: Fournisseur, min: 0, max: "*", definition: "Relation N-N (vendor_id + table de liaison (H))."}
+
+  Entrepot:
+    slug: entrepot
+    label: Entrepôt
+    definition: "Site physique qui stocke, prépare et expédie les commandes. Référentiel géré par le WMS (H)."
+    owner: Direction logistique
+    synonyms: [Dépôt, Site, Warehouse]
+    source_ids:
+      - {source: wms, module: warehouses, id_field: code, business_key: code, example: "LIL"}
+    properties:
+      code:   {type: string, required: true}
+      nom:    {type: string, required: true}
+      ville:  {type: string}
+      region: {type: enum, values: [Nord, Sud, IDF], required: true}
+
+  Fournisseur:
+    slug: fournisseur
+    label: Fournisseur
+    definition: "Organisation qui fournit des produits, enregistrée dans le module vTiger « Vendors »."
+    owner: Direction des achats
+    synonyms: [Vendor, Supplier, Prestataire]
+    source_ids:
+      - {source: vtiger, module: Vendors, id_field: id, business_key: vendor_no, example: "2x1 / VEN1"}
+    properties:
+      numeroFournisseur: {type: string, required: true}
+      nom:               {type: string, required: true}
+      pays:              {type: string}
+      email:             {type: string, pii: true}
+
+  ReleveStock:
+    slug: stock
+    label: Relevé de stock
+    definition: >
+      Photographie de la quantité disponible d'un produit dans un entrepôt à une date donnée. Grandeur
+      semi-additive : elle s'additionne entre produits et entrepôts, mais pas dans le temps.
+    owner: Direction logistique
+    synonyms: [Stock, Inventaire]
+    source_ids:
+      - {source: wms, module: stock, id_field: "date+code_entrepot+reference", business_key: "date+code_entrepot+reference"}
+    properties:
+      dateReleve:  {type: date, required: true}
+      quantite:    {type: decimal, required: true, min_inclusive: 0}
+    relations:
+      stockDe:     {target: Produit, min: 1, max: 1}
+      stockDans:   {target: Entrepot, min: 1, max: 1}
+
+# Chemins d'impact (analyse de dépendances). "^" signifie « parcourir la relation à l'envers ».
+impact_paths:
+  Fournisseur:
+    - {name: produits_fournis,   path: ["^fourniPar"]}
+    - {name: lignes_impactees,   path: ["^fourniPar", "^porteSur"]}
+    - {name: commandes_impactees, path: ["^fourniPar", "^porteSur", "ligneDe"]}
+    - {name: clients_impactes,   path: ["^fourniPar", "^porteSur", "ligneDe", "passeePar"]}
+  Produit:
+    - {name: commandes_impactees, path: ["^porteSur", "ligneDe"]}
+    - {name: clients_impactes,   path: ["^porteSur", "ligneDe", "passeePar"]}
+    - {name: fournisseurs,       path: ["fourniPar"]}
+  Entrepot:
+    - {name: commandes_affectees, path: ["^prepareeDans"]}
+    - {name: clients_impactes,   path: ["^prepareeDans", "passeePar"]}
+  Client:
+    - {name: commandes,          path: ["^passeePar"]}
+    - {name: contacts,           path: ["^travaillePour"]}
+    - {name: fournisseurs_dont_depend, path: ["dependDe"]}
+  Contact:
+    - {name: identites_whatsapp, path: ["^identifie"]}
+    - {name: client,             path: ["travaillePour"]}
+
+# Termes ambigus : un terme qui renvoie à plusieurs définitions oblige l'agent à demander une précision.
+ambiguous_terms:
+  client:  ["concept:Client", "concept:Contact"]
+  ventes:  ["metric:chiffre_affaires", "metric:quantite_vendue", "metric:nb_commandes"]
+  marge:   ["metric:marge", "metric:taux_marge"]
+  statut:  ["property:Commande.statut", "property:Commande.statutCRM", "property:Commande.statutLogistique"]
+  contact: ["concept:Contact", "concept:IdentiteWhatsApp"]

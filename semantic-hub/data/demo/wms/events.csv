@@ -1,0 +1,14 @@
+event_id,salesorder_no,event,ts_utc,warehouse_code,carrier,tracking,line_sequence,quantity
+E1,SO101,affectation,2026-07-03T10:00:00Z,LIL,,,,
+E2,SO101,expedition,2026-07-04T15:00:00Z,LIL,Geodis,GD101,,
+E3,SO101,livraison,2026-07-06T09:00:00Z,LIL,Geodis,GD101,,
+E4,SO102,affectation,2026-07-16T08:00:00Z,LIL,,,,
+E5,SO102,expedition,2026-07-17T10:00:00Z,LIL,Colissimo,CP102,,
+E6,SO103,affectation,2026-07-01T09:00:00Z,MRS,,,,
+E7,SO104,affectation,2026-08-02T12:00:00Z,PAR,,,,
+E8,SO104,expedition,2026-08-04T09:00:00Z,PAR,DHL,DH104,,
+E9,SO104,livraison,2026-08-06T15:00:00Z,PAR,DHL,DH104,,
+E10,SO104,retour,2026-08-20T10:00:00Z,PAR,,,1,5
+E11,SO110,affectation,2026-09-25T12:00:00Z,LIL,,,,
+E12,SO110,expedition,2026-09-26T08:30:00Z,LIL,Geodis,GD110,,
+E13,SO110,livraison,2026-09-28T10:00:00Z,LIL,Geodis,GD110,,

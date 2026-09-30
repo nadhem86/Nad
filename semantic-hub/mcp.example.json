@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "nad-semantic-hub": {
+      "command": "python3",
+      "args": ["-m", "hub.mcp_server"],
+      "cwd": "semantic-hub",
+      "env": {
+        "NAD_DB_PATH": "./var/hub.sqlite",
+        "NAD_MCP_TOKEN": "demo-agent-nord"
+      }
+    }
+  }
+}

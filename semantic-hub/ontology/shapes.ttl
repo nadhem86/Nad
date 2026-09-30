@@ -1,0 +1,282 @@
+@prefix nad: <https://nad.example/ontologie#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+nad:ClientShape a sh:NodeShape ;
+    sh:property [ sh:class nad:Fournisseur ;
+            sh:path nad:dependDe ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:email ;
+            sh:pattern "^[^@\\s]+@[^@\\s]+$" ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroClient ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:raisonSociale ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "Nord"^^xsd:string "Sud"^^xsd:string "IDF"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:region ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:secteur ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:telephone ] ;
+    sh:targetClass nad:Client .
+
+nad:CommandeShape a sh:NodeShape ;
+    sh:property [ sh:class nad:Contact ;
+            sh:maxCount 1 ;
+            sh:path nad:contactReferent ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path nad:dateAffectation ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path nad:dateAnnulation ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:dateCommande ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path nad:dateConfirmation ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path nad:dateExpedition ],
+        [ sh:datatype xsd:dateTime ;
+            sh:maxCount 1 ;
+            sh:path nad:dateLivraison ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "EUR"^^xsd:string "USD"^^xsd:string "GBP"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:devise ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:motifAnnulation ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroCommande ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:numeroSuivi ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:objet ],
+        [ sh:class nad:Client ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:passeePar ],
+        [ sh:class nad:Entrepot ;
+            sh:maxCount 1 ;
+            sh:path nad:prepareeDans ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "brouillon"^^xsd:string "confirmee"^^xsd:string "en_preparation"^^xsd:string "expediee"^^xsd:string "livree"^^xsd:string "annulee"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:path nad:statut ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "brouillon"^^xsd:string "confirmee"^^xsd:string "livree"^^xsd:string "annulee"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:statutCRM ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "en_preparation"^^xsd:string "expediee"^^xsd:string "livree"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:path nad:statutLogistique ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:transporteur ] ;
+    sh:targetClass nad:Commande .
+
+nad:ContactShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:email ;
+            sh:pattern "^[^@\\s]+@[^@\\s]+$" ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:mobile ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:nom ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroContact ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:prenom ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:telephone ],
+        [ sh:class nad:Client ;
+            sh:maxCount 1 ;
+            sh:path nad:travaillePour ] ;
+    sh:targetClass nad:Contact .
+
+nad:EntrepotShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:code ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:nom ],
+        [ sh:datatype xsd:string ;
+            sh:in ( "Nord"^^xsd:string "Sud"^^xsd:string "IDF"^^xsd:string ) ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:region ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:ville ] ;
+    sh:targetClass nad:Entrepot .
+
+nad:FournisseurShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:email ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:nom ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroFournisseur ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:pays ] ;
+    sh:targetClass nad:Fournisseur .
+
+nad:GroupeWhatsAppShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:description ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:nomGroupe ] ;
+    sh:targetClass nad:GroupeWhatsApp .
+
+nad:IdentiteWhatsAppShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:path nad:estBusiness ],
+        [ sh:class nad:Contact ;
+            sh:maxCount 1 ;
+            sh:path nad:identifie ],
+        [ sh:class nad:GroupeWhatsApp ;
+            sh:path nad:membreDe ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:nomAffiche ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroE164 ;
+            sh:pattern "^\\+[1-9][0-9]{6,14}$" ] ;
+    sh:targetClass nad:IdentiteWhatsApp .
+
+nad:LigneCommandeShape a sh:NodeShape ;
+    sh:property [ sh:class nad:Commande ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:ligneDe ],
+        [ sh:datatype xsd:integer ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:numeroLigne ],
+        [ sh:class nad:Produit ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:porteSur ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:prixUnitaire ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minExclusive 0.0 ;
+            sh:path nad:quantite ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:quantiteRetournee ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:remiseMontant ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:maxInclusive 100.0 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:remisePct ],
+        [ sh:lessThanOrEquals nad:quantite ;
+            sh:path nad:quantiteRetournee ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:tauxTaxe ] ;
+    sh:targetClass nad:LigneCommande .
+
+nad:ProduitShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:boolean ;
+            sh:maxCount 1 ;
+            sh:path nad:actif ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path nad:categorie ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:coutUnitaire ],
+        [ sh:class nad:Fournisseur ;
+            sh:path nad:fourniPar ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:libelle ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:prixCatalogue ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:reference ] ;
+    sh:targetClass nad:Produit .
+
+nad:ReleveStockShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:date ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:dateReleve ],
+        [ sh:datatype xsd:decimal ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:minInclusive 0.0 ;
+            sh:path nad:quantite ],
+        [ sh:class nad:Entrepot ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:stockDans ],
+        [ sh:class nad:Produit ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path nad:stockDe ] ;
+    sh:targetClass nad:ReleveStock .
+

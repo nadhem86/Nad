@@ -1,0 +1,190 @@
+# Modèle sémantique analytique partagé. Toutes les interfaces (API, MCP, dashboards) calculent
+# les métriques à partir de CE fichier, compilé en SQL par hub/semantic.py.
+# Les tables fct_* / dim_* sont des PROJECTIONS du knowledge graph, recalculées après chaque ingestion
+# ou action. Leurs clés sont les IRI canoniques du graphe : les couches partagent les mêmes identifiants.
+
+version: 1.0.0
+glossary_version: 1.0.0
+business_timezone: Europe/Paris      # les dates « jour/mois/trimestre » sont en heure de Paris
+reporting_currency: EUR
+
+dimensions:
+  client:
+    concept: nad:Client
+    table: dim_client
+    key: client_iri
+    attributes: {iri: client_iri, numero: numero, nom: raison_sociale, region: region, secteur: secteur}
+  produit:
+    concept: nad:Produit
+    table: dim_produit
+    key: produit_iri
+    attributes: {iri: produit_iri, reference: reference, libelle: libelle, categorie: categorie}
+  entrepot:
+    concept: nad:Entrepot
+    table: dim_entrepot
+    key: entrepot_iri
+    attributes: {iri: entrepot_iri, code: code, nom: nom, region: region}
+  fournisseur:
+    concept: nad:Fournisseur
+    table: bridge_produit_fournisseur   # relation N-N : pont, source potentielle de doubles comptages
+    key: produit_iri
+    attributes: {iri: fournisseur_iri, nom: fournisseur_nom}
+    many_to_many: true
+  statut:
+    concept: nad:Commande.statut
+    column: statut
+    attributes: {code: statut}
+  temps:
+    column: date_locale            # date métier en heure de Paris
+    attributes: {jour: "date_locale", mois: "substr(date_locale,1,7)",
+                 trimestre: "substr(date_locale,1,4) || '-T' || ((cast(substr(date_locale,6,2) as integer)+2)/3)",
+                 annee: "substr(date_locale,1,4)"}
+
+tables:
+  fct_commande:
+    grain: "1 ligne par Commande (nad:Commande)"
+    dimensions: [client, entrepot, statut, temps]
+    joins:
+      client:   "fct_commande.client_iri = dim_client.client_iri"
+      entrepot: "fct_commande.entrepot_iri = dim_entrepot.entrepot_iri"
+  fct_ligne:
+    grain: "1 ligne par LigneCommande (nad:LigneCommande)"
+    dimensions: [client, produit, entrepot, statut, temps, fournisseur]
+    joins:
+      client:      "fct_ligne.client_iri = dim_client.client_iri"
+      produit:     "fct_ligne.produit_iri = dim_produit.produit_iri"
+      entrepot:    "fct_ligne.entrepot_iri = dim_entrepot.entrepot_iri"
+      fournisseur: "fct_ligne.produit_iri = bridge_produit_fournisseur.produit_iri"
+  fct_stock:
+    grain: "1 ligne par (jour de relevé, Produit, Entrepôt)"
+    dimensions: [produit, entrepot]
+    joins:
+      produit:  "fct_stock.produit_iri = dim_produit.produit_iri"
+      entrepot: "fct_stock.entrepot_iri = dim_entrepot.entrepot_iri"
+
+# Règles communes, référencées par les métriques.
+common_rules:
+  commandes_valides: "statut IN ('confirmee','en_preparation','expediee','livree')"
+  taxes: "Tous les montants sont HT. La TVA (tauxTaxe) est exclue du CA et de la marge."
+  remises: "Montant net ligne = quantite * prixUnitaire * (1 - remisePct/100) - remiseMontant, borné à 0."
+  retours: "Les retours (quantiteRetournee) réduisent quantité et CA au prorata du prix net unitaire, à la date de la commande (pas à la date du retour)."
+  annulees: "Les commandes annulées et les brouillons sont exclus du CA, de la marge, des quantités et du panier moyen."
+  devises: "Conversion en EUR au taux de référence du jour de la commande (date locale). Taux manquant : la ligne est EXCLUE et signalée dans warnings, jamais convertie à 1."
+  fuseau: "Le rattachement à un jour/mois/trimestre utilise la date locale Europe/Paris de dateCommande (UTC en source)."
+  manquants: "Une valeur manquante n'est jamais remplacée par 0 : la ligne est exclue de la métrique concernée et comptée dans warnings."
+
+metrics:
+  nb_commandes:
+    label: Nombre de commandes
+    definition: "Nombre de commandes valides distinctes."
+    owner: Direction commerciale
+    table: fct_commande
+    expression: "COUNT(DISTINCT fct_commande.commande_iri)"
+    filters: [commandes_valides]
+    additivity: additive
+    additivity_note: "Additive par client, entrepôt et temps. Non additive par produit : une commande multi-produits compterait plusieurs fois. La dimension produit est donc interdite ici."
+    unit: commandes
+    rules: [annulees, fuseau]
+
+  quantite_vendue:
+    label: Quantité vendue
+    definition: "Somme des quantités nettes des retours sur les lignes des commandes valides."
+    owner: Direction commerciale
+    table: fct_ligne
+    expression: "SUM(fct_ligne.quantite - COALESCE(fct_ligne.quantite_retournee,0))"
+    filters: [commandes_valides]
+    additivity: additive
+    additivity_note: "Additive sur toutes les dimensions sauf fournisseur (relation N-N), qui est interdite."
+    unit: unités
+    rules: [retours, annulees, fuseau]
+
+  chiffre_affaires:
+    label: Chiffre d'affaires net HT (commandé)
+    definition: "Somme des montants nets HT des lignes des commandes valides, après remises et retours, convertie en EUR."
+    owner: Direction financière
+    table: fct_ligne
+    expression: "SUM(fct_ligne.montant_net_eur)"
+    filters: [commandes_valides]
+    required_columns: [montant_net_eur]
+    additivity: additive
+    additivity_note: "Additive sur client, produit, entrepôt, statut et temps. Dimension fournisseur interdite (pont N-N : double comptage)."
+    unit: EUR
+    rules: [taxes, remises, retours, annulees, devises, fuseau, manquants]
+
+  marge:
+    label: Marge brute
+    definition: "CA net HT moins coût d'achat des quantités nettes, sur les lignes dont le coût est connu."
+    owner: Direction financière
+    table: fct_ligne
+    expression: "SUM(fct_ligne.montant_net_eur - fct_ligne.cout_eur)"
+    filters: [commandes_valides]
+    required_columns: [montant_net_eur, cout_eur]
+    additivity: additive
+    additivity_note: "Additive (hors fournisseur). Les lignes sans coût sont exclues et signalées."
+    unit: EUR
+    rules: [taxes, remises, retours, annulees, devises, fuseau, manquants]
+    sensitivity: confidentiel
+
+  taux_marge:
+    label: Taux de marge
+    definition: "marge / CA, calculés sur le MÊME ensemble de lignes (celles dont le coût est connu). Jamais une moyenne de taux."
+    owner: Direction financière
+    table: fct_ligne
+    expression: "SUM(fct_ligne.montant_net_eur - fct_ligne.cout_eur) / NULLIF(SUM(fct_ligne.montant_net_eur),0)"
+    filters: [commandes_valides]
+    required_columns: [montant_net_eur, cout_eur]
+    additivity: non_additive
+    additivity_note: "Ratio : il se recalcule à partir des sommes à chaque niveau d'agrégation."
+    unit: ratio
+    rules: [taxes, remises, retours, annulees, devises, manquants]
+    sensitivity: confidentiel
+
+  panier_moyen:
+    label: Panier moyen
+    definition: "CA net HT / nombre de commandes valides distinctes ayant au moins une ligne valorisée."
+    owner: Direction commerciale
+    table: fct_ligne
+    expression: "SUM(fct_ligne.montant_net_eur) / NULLIF(COUNT(DISTINCT fct_ligne.commande_iri),0)"
+    filters: [commandes_valides]
+    required_columns: [montant_net_eur]
+    additivity: non_additive
+    additivity_note: "Ratio ; dimensions produit et fournisseur interdites (le panier est une notion de commande)."
+    forbidden_dimensions: [produit]
+    unit: EUR
+    rules: [taxes, remises, retours, annulees, devises, fuseau]
+
+  delai_traitement:
+    label: Délai de traitement (heures)
+    definition: "Moyenne, en heures, de (dateExpedition - dateConfirmation) sur les commandes expédiées ou livrées."
+    owner: Direction logistique
+    table: fct_commande
+    expression: "AVG((julianday(fct_commande.expediee_at) - julianday(fct_commande.confirmee_at)) * 24.0)"
+    filters: ["fct_commande.statut IN ('expediee','livree')", "fct_commande.expediee_at IS NOT NULL", "fct_commande.confirmee_at IS NOT NULL"]
+    additivity: non_additive
+    additivity_note: "Moyenne : elle se recalcule depuis les commandes et ne s'additionne pas."
+    unit: heures
+    rules: [manquants]
+
+  taux_annulation:
+    label: Taux d'annulation
+    definition: "Commandes annulées / commandes sorties du brouillon (confirmées, en cours, livrées ou annulées)."
+    owner: Direction commerciale
+    table: fct_commande
+    expression: "CAST(SUM(CASE WHEN fct_commande.statut='annulee' THEN 1 ELSE 0 END) AS REAL) / NULLIF(COUNT(*),0)"
+    filters: ["fct_commande.statut <> 'brouillon'"]
+    additivity: non_additive
+    unit: ratio
+    rules: [fuseau]
+    note: "Une commande annulée depuis l'état brouillon compte au numérateur et au dénominateur."
+
+  stock_disponible:
+    label: Stock disponible (dernier relevé)
+    definition: "Somme des quantités du DERNIER relevé de la période, par produit et entrepôt."
+    owner: Direction logistique
+    table: fct_stock
+    expression: "SUM(fct_stock.quantite)"
+    semi_additive: {time_column: releve_date, aggregation: last}
+    additivity: semi_additive
+    additivity_note: "Additive par produit et entrepôt, NON additive dans le temps : on prend le dernier relevé de la période."
+    unit: unités
+    rules: [manquants]

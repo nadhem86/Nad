@@ -1,0 +1,56 @@
+# Politique d'accès : RBAC complété par des attributs (ABAC).
+# Appliquée CÔTÉ SERVEUR dans hub/security.py, pour toutes les interfaces (API REST, MCP, CLI).
+# Aucune permission ne dépend du contenu d'un prompt : le principal est résolu à partir d'un jeton.
+
+version: 1.0.0
+
+roles:
+  admin:
+    permissions: ["*"]
+  direction:
+    permissions: ["entity:read:*", "pii:read", "metric:*", "audit:read"]
+  commercial:
+    permissions:
+      - "entity:read:Client"
+      - "entity:read:Contact"
+      - "entity:read:Commande"
+      - "entity:read:LigneCommande"
+      - "entity:read:Produit"
+      - "entity:read:IdentiteWhatsApp"
+      - "entity:read:GroupeWhatsApp"
+      - "pii:read"
+      - "metric:nb_commandes"
+      - "metric:quantite_vendue"
+      - "metric:chiffre_affaires"
+      - "metric:panier_moyen"
+      - "metric:taux_annulation"
+      - "action:confirmer"
+      - "action:annuler"
+    scope: {attribute: regions, applies_to: client_region}
+  logisticien:
+    permissions:
+      - "entity:read:Commande"
+      - "entity:read:LigneCommande"
+      - "entity:read:Produit"
+      - "entity:read:Entrepot"
+      - "entity:read:Fournisseur"
+      - "entity:read:ReleveStock"
+      - "entity:read:Client"
+      - "metric:nb_commandes"
+      - "metric:quantite_vendue"
+      - "metric:delai_traitement"
+      - "metric:stock_disponible"
+      - "action:affecter_entrepot"
+      - "action:expedier"
+    scope: {attribute: entrepots, applies_to: warehouse}
+  responsable_logistique:
+    inherits: [logisticien]
+    permissions: ["commande:annuler_en_preparation", "action:annuler"]
+  analyste:
+    permissions: ["entity:read:*", "metric:*"]   # pas de pii:read, pas d'action
+
+# Attributs de principal reconnus :
+#   regions:   [Nord, Sud, IDF] | ["*"]   -> périmètre client (commandes, lignes, clients, contacts)
+#   entrepots: [LIL, MRS, PAR] | ["*"]    -> périmètre des actions logistiques
+#   is_agent:  true                      -> principal utilisé par un agent IA ; seules les actions
+#                                           agent_allowed: true lui sont ouvertes (défense en profondeur)

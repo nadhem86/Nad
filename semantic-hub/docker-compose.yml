@@ -1,0 +1,17 @@
+# Démo locale reproductible : API REST sur http://localhost:8000/docs (base SQLite dans un volume).
+services:
+  api:
+    build: .
+    env_file: [.env.example]
+    environment:
+      NAD_DB_PATH: /data/hub.sqlite
+    ports: ["8000:8000"]
+    volumes: [hub-data:/data]
+  tests:
+    build: .
+    profiles: [test]
+    environment:
+      NAD_DB_PATH: /tmp/test.sqlite
+    command: ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+volumes:
+  hub-data:

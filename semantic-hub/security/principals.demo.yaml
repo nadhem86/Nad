@@ -1,0 +1,28 @@
+# Principaux de DÉMONSTRATION. Seule l'empreinte SHA-256 des jetons est stockée.
+# Jetons de démo en clair : voir .env.example (NE PAS réutiliser en production).
+# En production : remplacer par l'annuaire d'entreprise (OIDC/LDAP) ; fichier choisi via NAD_PRINCIPALS_FILE.
+principals:
+  - id: alice.admin
+    roles: [admin]
+    attributes: {regions: ["*"], entrepots: ["*"]}
+    token_sha256: cce7a2cf1ae045989cfc914fb95a41526f167a838b3c7d33745143614abace7c  # demo-admin
+  - id: bruno.commercial.nord
+    roles: [commercial]
+    attributes: {regions: [Nord]}
+    token_sha256: cfd408c097d841d9a882ac8101027c8434a485118dd433d119c67fd8279d1c91  # demo-commercial-nord
+  - id: chloe.commerciale.sud
+    roles: [commercial]
+    attributes: {regions: [Sud]}
+    token_sha256: 905a4f60803b4ef7c5dc70a84a6550d7cc7765b47d015b7413d826de11c5f943  # demo-commercial-sud
+  - id: david.logisticien.lille
+    roles: [logisticien]
+    attributes: {entrepots: [LIL], regions: ["*"]}
+    token_sha256: 70566909f9646797053594a29f2ad66cf907ac40c55f43199532833c6343bc96  # demo-logisticien-lille
+  - id: emma.analyste
+    roles: [analyste]
+    attributes: {regions: ["*"]}
+    token_sha256: 1134dc0b8ff306889b07d457e00f6f5aeeb3262d84048751c9aae93b2648880e  # demo-analyste
+  - id: agent.commercial.nord
+    roles: [commercial]
+    attributes: {regions: [Nord], is_agent: true}
+    token_sha256: ee310ddccd48ae1868a0b4999fd241d2b938734b67e0e654f8729e454d79069d  # demo-agent-nord

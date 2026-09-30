@@ -1,0 +1,100 @@
+# Couche opérationnelle : états, transitions et actions sur nad:Commande.
+# Le système source qui détient l'action (authority) reste l'autorité :
+# l'action est d'abord écrite dans la source via une passerelle, puis le graphe et les projections
+# sont mis à jour. Si l'écriture dans la source échoue, rien n'est modifié.
+
+version: 1.0.0
+entity: nad:Commande
+
+states:
+  brouillon:      {label: Brouillon,       vtiger_sostatus: Created,   terminal: false}
+  confirmee:      {label: Confirmée,       vtiger_sostatus: Approved,  terminal: false}
+  en_preparation: {label: En préparation,  wms_stage: en_preparation,  terminal: false}
+  expediee:       {label: Expédiée,        wms_stage: expediee,        terminal: false}
+  livree:         {label: Livrée,          vtiger_sostatus: Delivered, wms_stage: livree, terminal: true}
+  annulee:        {label: Annulée,         vtiger_sostatus: Cancelled, terminal: true}
+
+# Règle R3 (statut consolidé), dans l'ordre de priorité :
+#   statutCRM = annulee -> annulee ; livraison (CRM ou WMS) -> livree ; WMS expediee -> expediee ;
+#   WMS en_preparation -> en_preparation ; sinon statutCRM.
+consolidation_rule: R3
+
+transitions:
+  - {from: brouillon,      to: confirmee,      action: confirmer}
+  - {from: brouillon,      to: annulee,        action: annuler}
+  - {from: confirmee,      to: annulee,        action: annuler}
+  - {from: en_preparation, to: annulee,        action: annuler, extra_permission: "commande:annuler_en_preparation"}
+  - {from: confirmee,      to: en_preparation, action: affecter_entrepot}
+  - {from: en_preparation, to: expediee,       action: expedier}
+  - {from: expediee,       to: livree,         action: null, note: "Événement transporteur reçu par ingestion WMS, pas d'action manuelle."}
+
+actions:
+  confirmer:
+    label: Confirmer la commande
+    authority: vtiger
+    permission: "action:confirmer"
+    agent_allowed: true
+    input: {commande: "IRI nad:Commande", idempotency_key: "string (obligatoire)"}
+    output: {commande: IRI, statut: confirmee, dateConfirmation: dateTime, source_ack: "réponse passerelle"}
+    preconditions:
+      - "statut consolidé = brouillon"
+      - "la commande a au moins une ligne"
+    validations:
+      - "chaque ligne a une quantité > 0 et un prix unitaire >= 0"
+      - "le client est dans le périmètre (région) de l'acteur"
+    effects:
+      - "vTiger : sostatus = Approved, cf_date_confirmation = now (écriture source)"
+      - "KG : statutCRM = confirmee, dateConfirmation (method=saisie, source=vtiger)"
+      - "KG : recalcul de R3 (statut), puis des projections analytiques"
+    errors: [NOT_FOUND, FORBIDDEN, OUT_OF_SCOPE, INVALID_TRANSITION, VALIDATION_ERROR, SOURCE_UNAVAILABLE, IDEMPOTENCY_CONFLICT]
+
+  annuler:
+    label: Annuler la commande
+    authority: vtiger
+    permission: "action:annuler"
+    agent_allowed: false      # action destructive : jamais déclenchée par un agent IA
+    input: {commande: IRI, motif: "string (obligatoire, 5 à 500 car.)", idempotency_key: string}
+    output: {commande: IRI, statut: annulee, dateAnnulation: dateTime}
+    preconditions: ["statut consolidé IN (brouillon, confirmee, en_preparation)"]
+    validations: ["motif non vide", "en_preparation : permission supplémentaire commande:annuler_en_preparation"]
+    effects:
+      - "vTiger : sostatus = Cancelled"
+      - "KG : statutCRM = annulee, dateAnnulation, motifAnnulation ; R3 ; projections"
+    errors: [NOT_FOUND, FORBIDDEN, OUT_OF_SCOPE, INVALID_TRANSITION, VALIDATION_ERROR, SOURCE_UNAVAILABLE, IDEMPOTENCY_CONFLICT]
+
+  affecter_entrepot:
+    label: Affecter à un entrepôt
+    authority: wms
+    permission: "action:affecter_entrepot"
+    agent_allowed: false
+    input: {commande: IRI, entrepot: "IRI nad:Entrepot", idempotency_key: string}
+    output: {commande: IRI, entrepot: IRI, statut: en_preparation}
+    preconditions: ["statut consolidé = confirmee"]
+    validations:
+      - "l'entrepôt existe et n'est pas supprimé"
+      - "l'entrepôt est dans le périmètre de l'acteur (attribut entrepots)"
+      - "le dernier relevé de stock de l'entrepôt couvre chaque ligne (quantité disponible >= quantité commandée)"
+    effects:
+      - "WMS : création de l'ordre de préparation"
+      - "KG : prepareeDans, statutLogistique = en_preparation, dateAffectation ; R3 ; projections"
+    errors: [NOT_FOUND, FORBIDDEN, OUT_OF_SCOPE, INVALID_TRANSITION, STOCK_INSUFFISANT, SOURCE_UNAVAILABLE, IDEMPOTENCY_CONFLICT]
+
+  expedier:
+    label: Expédier la commande
+    authority: wms
+    permission: "action:expedier"
+    agent_allowed: false
+    input: {commande: IRI, transporteur: string, numero_suivi: string, idempotency_key: string}
+    output: {commande: IRI, statut: expediee, dateExpedition: dateTime}
+    preconditions: ["statut consolidé = en_preparation", "la commande est affectée à un entrepôt"]
+    validations: ["transporteur et numéro de suivi non vides", "l'entrepôt est dans le périmètre de l'acteur"]
+    effects:
+      - "WMS : événement d'expédition"
+      - "KG : statutLogistique = expediee, dateExpedition, transporteur, numeroSuivi ; R3 ; projections"
+    errors: [NOT_FOUND, FORBIDDEN, OUT_OF_SCOPE, INVALID_TRANSITION, VALIDATION_ERROR, SOURCE_UNAVAILABLE, IDEMPOTENCY_CONFLICT]
+
+idempotency: >
+  Chaque appel porte une idempotency_key. La première exécution enregistre (clé, empreinte de la requête,
+  réponse). Un appel rejoué avec la même clé et la même requête renvoie la réponse enregistrée sans
+  rien réécrire. La même clé avec une requête différente renvoie IDEMPOTENCY_CONFLICT. Un refus
+  (FORBIDDEN, INVALID_TRANSITION…) n'est pas mémorisé, ce qui permet de rejouer la clé une fois la cause corrigée.

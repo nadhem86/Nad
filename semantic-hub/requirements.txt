@@ -1,0 +1,8 @@
+# Versions validées dans l'environnement de développement (30/09/2026).
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+pydantic>=2.7,<3
+PyYAML>=6.0,<7
+rdflib>=7.0,<8
+pyshacl>=0.26,<1
+mcp>=2.2,<3          # SDK MCP v2 (MCPServer) ; l'API v1 (FastMCP) n'est pas compatible
